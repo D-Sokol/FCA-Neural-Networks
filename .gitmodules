@@ -1,0 +1,3 @@
+[submodule "fcai"]
+	path = fcai
+	url = git@github.com:D-Sokol/fcai.git
