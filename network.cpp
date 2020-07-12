@@ -40,11 +40,12 @@ namespace NN {
         gradient = LossFunctionDerivative(output, target) * ActivationFunctionDerivative(output);
     }
 
-    void Neuron::CalcGradient(const Layer& next_layer, size_t neuron_id) {
+    void Neuron::CalcGradient(size_t neuron_id) {
         assert(!inputs.empty());
         double tmp = 0;
-        for (const auto& neuron : next_layer)
-            tmp += neuron.gradient * neuron.inputs[neuron_id].weight;
+        for (const auto* neuron : outputs)
+            // TODO: avoid using neuron_id
+            tmp += neuron->gradient * neuron->inputs[neuron_id].weight;
         gradient = tmp * ActivationFunctionDerivative(output);
     }
 
@@ -53,6 +54,12 @@ namespace NN {
             double delta = eta * gradient * inputs[i].source->output + alpha * inputs[i].delta_weight;
             inputs[i].weight += delta;
             inputs[i].delta_weight = delta;
+        }
+    }
+
+    void Neuron::Connect() {
+        for (auto& connection : inputs) {
+            connection.source->outputs.push_back(this);
         }
     }
 
@@ -90,6 +97,10 @@ namespace NN {
             if (i + 1u != structure.size())
                 layers.back().emplace_back(1.0);
         }
+
+        for (auto& layer : layers)
+            for (auto& neuron : layer)
+                neuron.Connect();
     }
 
     Data Network::Transform(const Data& data) const {
@@ -115,7 +126,7 @@ namespace NN {
         for (size_t layer_id = layers.size() - 2; layer_id > 0; --layer_id) {
             auto& layer = layers[layer_id];
             for (size_t i = 0; i + 1u < layer.size(); ++i)
-                layer[i].CalcGradient(layers[layer_id+1], i);
+                layer[i].CalcGradient(i);
         }
 
         for (size_t i = 1; i < layers.size(); ++i) {

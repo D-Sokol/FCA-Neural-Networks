@@ -11,7 +11,7 @@ namespace NN {
     Data ExtractOutputs(const Layer&);
 
     struct Connection {
-        const Neuron* source = nullptr;
+        Neuron* source = nullptr;
         double weight = 1.0;
         double delta_weight = 0.0;
     };
@@ -26,8 +26,9 @@ namespace NN {
         inline double GetOutput() const { return output; }
 
         void CalcGradient(double target);
-        void CalcGradient(const Layer& next_layer, size_t neuron_id);
+        void CalcGradient(size_t neuron_id);
         void UpdateWeight();
+        void Connect();
     private:
         static double LossFunction(double out, double target);
         static double LossFunctionDerivative(double out, double target);
