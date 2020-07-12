@@ -24,17 +24,16 @@ namespace NN {
     }
 
     double Neuron::FeedForward(const Layer & layer) const {
-        assert(layer.size() + 1u == input_weights.size());
+        assert(layer.size() == input_weights.size());
         return FeedForward(ExtractOutputs(layer));
     }
 
     double Neuron::FeedForward(const Data& data) const {
-        assert(data.size() + 1u == input_weights.size());
+        assert(data.size() == input_weights.size());
         output = 0;
         for (size_t i = 0; i < data.size(); ++i) {
             output += data[i] * input_weights[i];
         }
-        output += input_weights.back();
         return (output = ActivationFunction(output));
     }
 
@@ -43,6 +42,7 @@ namespace NN {
     }
 
     void Neuron::CalcGradient(const Layer& next_layer, size_t neuron_id) {
+        assert(!input_weights.empty());
         double tmp = 0;
         for (const auto& neuron : next_layer)
             tmp += neuron.gradient * neuron.input_weights[neuron_id];
@@ -50,25 +50,21 @@ namespace NN {
     }
 
     void Neuron::UpdateWeight(const Layer& prev_layer) {
-        for (size_t i = 0; i + 1 < input_weights.size(); ++i) {
+        assert(prev_layer.size() == input_weights.size());
+        for (size_t i = 0; i < input_weights.size(); ++i) {
             double delta = eta * gradient * prev_layer[i].output + alpha * last_delta_weights[i];
             input_weights[i] += delta;
             last_delta_weights[i] = delta;
         }
-        double delta = eta * gradient + alpha * last_delta_weights.back();
-        input_weights.back() += delta;
-        last_delta_weights.back() = delta;
     }
 
     void Neuron::UpdateWeight(const Data& input) {
+        assert(input.size() == input_weights.size());
         for (size_t i = 0; i + 1 < input_weights.size(); ++i) {
             double delta = eta * gradient * input[i] + alpha * last_delta_weights[i];
             input_weights[i] -= delta;
             last_delta_weights[i] = delta;
         }
-        double delta = eta * gradient + alpha * last_delta_weights.back();
-        input_weights.back() -= delta;
-        last_delta_weights.back() = delta;
     }
 
     double Neuron::LossFunction(double out, double target) {
@@ -98,33 +94,44 @@ namespace NN {
                 structure[i],
                 Neuron(structure[i-1] + 1)
             );
+            // Bias neuron with output value 1.
+            if (i + 1u != structure.size())
+                layers.back().emplace_back(0, 1.0);
         }
     }
 
     Data Network::Transform(const Data& data) const {
         assert(data.size() == input_size);
-        for (const auto& neuron : layers.front())
-            neuron.FeedForward(data);
-        for (size_t i = 1; i < layers.size(); ++i)
-            for (const auto& neuron : layers[i]) {
-                neuron.FeedForward(layers[i-1]);
+        Data copy = data;
+        copy.push_back(1.0);
+        for (size_t n = 0; n + 1u < layers.front().size(); ++n)
+            layers.front()[n].FeedForward(copy);
+
+        for (size_t i = 1; i < layers.size(); ++i) {
+            bool hidden_layer = (i + 1u != layers.size());
+            for (size_t n = 0; n + hidden_layer < layers[i].size(); ++n) {
+                layers[i][n].FeedForward(layers[i - 1]);
             }
+        }
         return ExtractOutputs(layers.back());
     }
 
     Data Network::FitTransform(const Data& input, const Data& target) {
+        assert(target.size() == layers.back().size());
         auto output = Transform(input);
         for (size_t i = 0; i < target.size(); ++i) {
             layers.back()[i].CalcGradient(target[i]);
         }
         for (int layer_id = layers.size() - 2; layer_id >= 0; --layer_id) {
             auto& layer = layers[layer_id];
-            for (size_t i = 0; i < layer.size(); ++i)
+            for (size_t i = 0; i + 1u < layer.size(); ++i)
                 layer[i].CalcGradient(layers[layer_id+1], i);
         }
 
-        for (auto& neuron : layers.front())
-            neuron.UpdateWeight(input);
+        Data copy = input;
+        copy.push_back(1.0);
+        for (size_t n = 0; n + 1u < layers.front().size(); ++n)
+            layers.front()[n].UpdateWeight(copy);
         for (size_t i = 1; i < layers.size(); ++i)
             for (auto& neuron : layers[i])
                 neuron.UpdateWeight(layers[i-1]);
