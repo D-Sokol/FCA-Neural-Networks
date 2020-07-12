@@ -6,8 +6,9 @@ using namespace std;
 
 int main() {
     NN::Network net({1, 2, 1});
-    for (double i = 0; i < 5; i += 1) {
-        cout << net.Transform({i}).front() << ' ';
+    for (size_t i = 0; i < 450; i += 1) {
+        cout << net.FitTransform({2}, {0.74}).front() << ' ';
     }
+    cout << endl;
     return 0;
 }
