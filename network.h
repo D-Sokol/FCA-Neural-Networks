@@ -14,7 +14,6 @@ namespace NN {
     public:
         explicit Neuron(size_t inputs, double output = 0.0);
         double FeedForward(const Layer&) const;
-        double FeedForward(const Data&) const;
         inline double SetOutput(double val) const { output = val; }
         inline double GetOutput() const { return output; }
 

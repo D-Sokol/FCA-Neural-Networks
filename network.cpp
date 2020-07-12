@@ -25,14 +25,9 @@ namespace NN {
 
     double Neuron::FeedForward(const Layer & layer) const {
         assert(layer.size() == input_weights.size());
-        return FeedForward(ExtractOutputs(layer));
-    }
-
-    double Neuron::FeedForward(const Data& data) const {
-        assert(data.size() == input_weights.size());
         output = 0;
-        for (size_t i = 0; i < data.size(); ++i) {
-            output += data[i] * input_weights[i];
+        for (size_t i = 0; i < layer.size(); ++i) {
+            output += layer[i].output * input_weights[i];
         }
         return (output = ActivationFunction(output));
     }
