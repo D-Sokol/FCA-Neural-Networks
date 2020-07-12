@@ -15,20 +15,22 @@ namespace NN {
         return data;
     }
 
-    Neuron::Neuron(const Layer& prev_layer, double output)
+    Neuron::Neuron(double output)
       : output(output)
-      , inputs(prev_layer.size())
+    {
+    }
+
+    Neuron::Neuron(Layer& prev_layer)
+      : inputs(prev_layer.size())
     {
         // TODO: weights generation.
         for (size_t n = 0; n < prev_layer.size(); ++n)
             inputs[n].source = &prev_layer[n];
     }
 
-    double Neuron::FeedForward(const Layer& layer) const {
-        assert(layer.size() == inputs.size());
+    double Neuron::FeedForward() const {
         output = 0;
-        for (size_t i = 0; i < layer.size(); ++i) {
-            assert(&layer[i] == inputs[i].source);
+        for (size_t i = 0; i < inputs.size(); ++i) {
             output += inputs[i].source->output * inputs[i].weight;
         }
         return (output = ActivationFunction(output));
@@ -46,10 +48,8 @@ namespace NN {
         gradient = tmp * ActivationFunctionDerivative(output);
     }
 
-    void Neuron::UpdateWeight(const Layer& prev_layer) {
-        assert(prev_layer.size() == inputs.size());
+    void Neuron::UpdateWeight() {
         for (size_t i = 0; i < inputs.size(); ++i) {
-            assert(&prev_layer[i] == inputs[i].source);
             double delta = eta * gradient * inputs[i].source->output + alpha * inputs[i].delta_weight;
             inputs[i].weight += delta;
             inputs[i].delta_weight = delta;
@@ -88,7 +88,7 @@ namespace NN {
             }
             // Bias neuron with output value 1.
             if (i + 1u != structure.size())
-                layers.back().emplace_back(Layer{}, 1.0);
+                layers.back().emplace_back(1.0);
         }
     }
 
@@ -100,7 +100,7 @@ namespace NN {
         for (size_t i = 1; i < layers.size(); ++i) {
             bool hidden_layer = (i + 1u != layers.size());
             for (size_t n = 0; n + hidden_layer < layers[i].size(); ++n) {
-                layers[i][n].FeedForward(layers[i - 1]);
+                layers[i][n].FeedForward();
             }
         }
         return ExtractOutputs(layers.back());
@@ -121,7 +121,7 @@ namespace NN {
         for (size_t i = 1; i < layers.size(); ++i) {
             bool hidden_layer = (i + 1u != layers.size());
             for (size_t n = 0; n + hidden_layer < layers[i].size(); ++n)
-                layers[i][n].UpdateWeight(layers[i - 1]);
+                layers[i][n].UpdateWeight();
         }
 
         return output;

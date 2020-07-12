@@ -18,14 +18,16 @@ namespace NN {
 
     class Neuron {
     public:
-        explicit Neuron(const Layer& prev_layer = {}, double output = 0.0);
-        double FeedForward(const Layer&) const;
+        explicit Neuron(double output = 1.0);
+        explicit Neuron(Layer& prev_layer);
+
+        double FeedForward() const;
         inline void SetOutput(double val) const { output = val; }
         inline double GetOutput() const { return output; }
 
         void CalcGradient(double target);
         void CalcGradient(const Layer& next_layer, size_t neuron_id);
-        void UpdateWeight(const Layer& prev_layer);
+        void UpdateWeight();
     private:
         static double LossFunction(double out, double target);
         static double LossFunctionDerivative(double out, double target);
@@ -34,7 +36,7 @@ namespace NN {
         static const double eta;
         static const double alpha;
 
-        mutable double output;
+        mutable double output = 1.0;
         double gradient = 0.0;
         std::vector<Connection> inputs;
         std::vector<Neuron*> outputs;
