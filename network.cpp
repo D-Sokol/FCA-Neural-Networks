@@ -58,15 +58,6 @@ namespace NN {
         }
     }
 
-    void Neuron::UpdateWeight(const Data& input) {
-        assert(input.size() == input_weights.size());
-        for (size_t i = 0; i + 1 < input_weights.size(); ++i) {
-            double delta = eta * gradient * input[i] + alpha * last_delta_weights[i];
-            input_weights[i] -= delta;
-            last_delta_weights[i] = delta;
-        }
-    }
-
     double Neuron::LossFunction(double out, double target) {
         return sqr(target - out);
     }
@@ -89,10 +80,11 @@ namespace NN {
     Network::Network(const Network::Structure& structure)
       : input_size(structure[0])
     {
-        for (size_t i = 1; i < structure.size(); ++i) {
+        layers.reserve(structure.size());
+        for (size_t i = 0; i < structure.size(); ++i) {
             layers.emplace_back(
                 structure[i],
-                Neuron(structure[i-1] + 1)
+                Neuron(i ? structure[i-1] + 1 : 0)
             );
             // Bias neuron with output value 1.
             if (i + 1u != structure.size())
@@ -102,10 +94,8 @@ namespace NN {
 
     Data Network::Transform(const Data& data) const {
         assert(data.size() == input_size);
-        Data copy = data;
-        copy.push_back(1.0);
-        for (size_t n = 0; n + 1u < layers.front().size(); ++n)
-            layers.front()[n].FeedForward(copy);
+        for (size_t n = 0; n < input_size; ++n)
+            layers.front()[n].SetOutput(data[n]);
 
         for (size_t i = 1; i < layers.size(); ++i) {
             bool hidden_layer = (i + 1u != layers.size());
@@ -122,19 +112,17 @@ namespace NN {
         for (size_t i = 0; i < target.size(); ++i) {
             layers.back()[i].CalcGradient(target[i]);
         }
-        for (int layer_id = layers.size() - 2; layer_id >= 0; --layer_id) {
+        for (size_t layer_id = layers.size() - 2; layer_id > 0; --layer_id) {
             auto& layer = layers[layer_id];
             for (size_t i = 0; i + 1u < layer.size(); ++i)
                 layer[i].CalcGradient(layers[layer_id+1], i);
         }
 
-        Data copy = input;
-        copy.push_back(1.0);
-        for (size_t n = 0; n + 1u < layers.front().size(); ++n)
-            layers.front()[n].UpdateWeight(copy);
-        for (size_t i = 1; i < layers.size(); ++i)
-            for (auto& neuron : layers[i])
-                neuron.UpdateWeight(layers[i-1]);
+        for (size_t i = 1; i < layers.size(); ++i) {
+            bool hidden_layer = (i + 1u != layers.size());
+            for (size_t n = 0; n + hidden_layer < layers[i].size(); ++n)
+                layers[i][n].UpdateWeight(layers[i - 1]);
+        }
 
         return output;
     }
