@@ -30,8 +30,8 @@ namespace NN {
 
     double Neuron::FeedForward() const {
         output = 0;
-        for (size_t i = 0; i < inputs.size(); ++i) {
-            output += inputs[i].source->output * inputs[i].weight;
+        for (const auto& input : inputs) {
+            output += input.source->output * input.weight;
         }
         return (output = ActivationFunction(output));
     }
@@ -40,26 +40,25 @@ namespace NN {
         gradient = LossFunctionDerivative(output, target) * ActivationFunctionDerivative(output);
     }
 
-    void Neuron::CalcGradient(size_t neuron_id) {
+    void Neuron::CalcGradient() {
         assert(!inputs.empty());
         double tmp = 0;
-        for (const auto* neuron : outputs)
-            // TODO: avoid using neuron_id
-            tmp += neuron->gradient * neuron->inputs[neuron_id].weight;
+        for (const auto& connection : outputs)
+            tmp += connection.destination->gradient * (*connection.weight);
         gradient = tmp * ActivationFunctionDerivative(output);
     }
 
     void Neuron::UpdateWeight() {
-        for (size_t i = 0; i < inputs.size(); ++i) {
-            double delta = eta * gradient * inputs[i].source->output + alpha * inputs[i].delta_weight;
-            inputs[i].weight += delta;
-            inputs[i].delta_weight = delta;
+        for (auto& input : inputs) {
+            double delta = eta * gradient * input.source->output + alpha * input.delta_weight;
+            input.weight += delta;
+            input.delta_weight = delta;
         }
     }
 
     void Neuron::Connect() {
         for (auto& connection : inputs) {
-            connection.source->outputs.push_back(this);
+            connection.source->outputs.push_back({this, &connection.weight});
         }
     }
 
@@ -126,7 +125,7 @@ namespace NN {
         for (size_t layer_id = layers.size() - 2; layer_id > 0; --layer_id) {
             auto& layer = layers[layer_id];
             for (size_t i = 0; i + 1u < layer.size(); ++i)
-                layer[i].CalcGradient(i);
+                layer[i].CalcGradient();
         }
 
         for (size_t i = 1; i < layers.size(); ++i) {

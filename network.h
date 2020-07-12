@@ -15,6 +15,10 @@ namespace NN {
         double weight = 1.0;
         double delta_weight = 0.0;
     };
+    struct ReverseConnection {
+        Neuron* destination = nullptr;
+        double* weight = nullptr;
+    };
 
     class Neuron {
     public:
@@ -26,7 +30,7 @@ namespace NN {
         inline double GetOutput() const { return output; }
 
         void CalcGradient(double target);
-        void CalcGradient(size_t neuron_id);
+        void CalcGradient();
         void UpdateWeight();
         void Connect();
     private:
@@ -40,7 +44,7 @@ namespace NN {
         mutable double output = 1.0;
         double gradient = 0.0;
         std::vector<Connection> inputs;
-        std::vector<Neuron*> outputs;
+        std::vector<ReverseConnection> outputs;
     };
 
     class Network {
