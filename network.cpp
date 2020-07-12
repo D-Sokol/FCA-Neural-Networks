@@ -15,19 +15,21 @@ namespace NN {
         return data;
     }
 
-    Neuron::Neuron(size_t inputs, double output)
+    Neuron::Neuron(const Layer& prev_layer, double output)
       : output(output)
-      , input_weights(inputs, 1)
-      , last_delta_weights(inputs, 0.0)
+      , inputs(prev_layer.size())
     {
         // TODO: weights generation.
+        for (size_t n = 0; n < prev_layer.size(); ++n)
+            inputs[n].source = &prev_layer[n];
     }
 
-    double Neuron::FeedForward(const Layer & layer) const {
-        assert(layer.size() == input_weights.size());
+    double Neuron::FeedForward(const Layer& layer) const {
+        assert(layer.size() == inputs.size());
         output = 0;
         for (size_t i = 0; i < layer.size(); ++i) {
-            output += layer[i].output * input_weights[i];
+            assert(&layer[i] == inputs[i].source);
+            output += inputs[i].source->output * inputs[i].weight;
         }
         return (output = ActivationFunction(output));
     }
@@ -37,19 +39,20 @@ namespace NN {
     }
 
     void Neuron::CalcGradient(const Layer& next_layer, size_t neuron_id) {
-        assert(!input_weights.empty());
+        assert(!inputs.empty());
         double tmp = 0;
         for (const auto& neuron : next_layer)
-            tmp += neuron.gradient * neuron.input_weights[neuron_id];
+            tmp += neuron.gradient * neuron.inputs[neuron_id].weight;
         gradient = tmp * ActivationFunctionDerivative(output);
     }
 
     void Neuron::UpdateWeight(const Layer& prev_layer) {
-        assert(prev_layer.size() == input_weights.size());
-        for (size_t i = 0; i < input_weights.size(); ++i) {
-            double delta = eta * gradient * prev_layer[i].output + alpha * last_delta_weights[i];
-            input_weights[i] += delta;
-            last_delta_weights[i] = delta;
+        assert(prev_layer.size() == inputs.size());
+        for (size_t i = 0; i < inputs.size(); ++i) {
+            assert(&prev_layer[i] == inputs[i].source);
+            double delta = eta * gradient * inputs[i].source->output + alpha * inputs[i].delta_weight;
+            inputs[i].weight += delta;
+            inputs[i].delta_weight = delta;
         }
     }
 
@@ -77,13 +80,15 @@ namespace NN {
     {
         layers.reserve(structure.size());
         for (size_t i = 0; i < structure.size(); ++i) {
-            layers.emplace_back(
-                structure[i],
-                Neuron(i ? structure[i-1] + 1 : 0)
-            );
+            if (i == 0) {
+                layers.emplace_back(input_size);
+            } else {
+                auto& prev_layer = layers.back();
+                layers.emplace_back(structure[i], Neuron(prev_layer));
+            }
             // Bias neuron with output value 1.
             if (i + 1u != structure.size())
-                layers.back().emplace_back(0, 1.0);
+                layers.back().emplace_back(Layer{}, 1.0);
         }
     }
 

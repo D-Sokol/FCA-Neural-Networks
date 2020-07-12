@@ -10,9 +10,15 @@ namespace NN {
 
     Data ExtractOutputs(const Layer&);
 
+    struct Connection {
+        const Neuron* source = nullptr;
+        double weight = 1.0;
+        double delta_weight = 0.0;
+    };
+
     class Neuron {
     public:
-        explicit Neuron(size_t inputs, double output = 0.0);
+        explicit Neuron(const Layer& prev_layer = {}, double output = 0.0);
         double FeedForward(const Layer&) const;
         inline void SetOutput(double val) const { output = val; }
         inline double GetOutput() const { return output; }
@@ -30,8 +36,8 @@ namespace NN {
 
         mutable double output;
         double gradient = 0.0;
-        std::vector<double> input_weights;
-        std::vector<double> last_delta_weights;
+        std::vector<Connection> inputs;
+        std::vector<Neuron*> outputs;
     };
 
     class Network {
