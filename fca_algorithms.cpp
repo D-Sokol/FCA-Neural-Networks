@@ -5,10 +5,12 @@ using namespace std;
 
 namespace FCA {
     vector<Concept> ThetaSophia(const Context& context, size_t min_size) {
+        // Concept candidate with label that shows if the first one is proper concept.
+        using MarkedConcept = pair<Concept, bool>;
         // Projection phi_{-1} produces only one trivial concept,
         //  that contains all objects and no attributes.
-        vector<Concept> result = {{context.ObjSize(), context.AttrSize()}};
-        result.front().Extent().flip();
+        vector<MarkedConcept> result = {{{context.ObjSize(), context.AttrSize()}, true}};
+        result.front().first.Extent().flip();
 
         for (size_t i = 0; i < context.AttrSize(); ++i) {
             // Consider projection phi_i that consider attributes from 0 to i-th, inclusively.
@@ -20,7 +22,7 @@ namespace FCA {
                     auto& concept_ = result[k];
                     auto ext = context.Extent(i);
                     ext.flip();
-                    ext &= concept_.Extent();
+                    ext &= concept_.first.Extent();
                     if (ext.any())
                         result.push_back(concept_);
                 }
@@ -29,18 +31,23 @@ namespace FCA {
                     // where A_{+} = {a \in A | a possess attribute i}
                     auto& concept_ = result[k];  // Reference from the previous block may be invalidated.
 
-                    concept_.Extent() &= context.Extent(i);
-                    concept_.Intent().set(i);
-                    if (!concept_.Intent().is_prefix_equal(context.DrvtObj(concept_.Extent()), i)) {
-                        // TODO: remove false positive.
+                    concept_.first.Extent() &= context.Extent(i);
+                    concept_.first.Intent().set(i);
+                    if (!concept_.first.Intent().is_prefix_equal(context.DrvtObj(concept_.first.Extent()), i)) {
+                        concept_.second = false;
                     }
                 }
             }
             // Filter found concepts to have at least min_size elements.
             auto it = remove_if(result.begin(), result.end(),
-                                [=](const Concept& c) { return c.ExtentSize() < min_size; });
+                                [=](const MarkedConcept& c) { return !c.second || c.first.ExtentSize() < min_size; });
             result.erase(it, result.end());
         }
-        return result;
+
+        vector<Concept> return_value;
+        return_value.reserve(result.size());
+        for (auto& [concept_, label] : result)
+            return_value.push_back(move(concept_));
+        return return_value;
     }
 }
