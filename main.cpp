@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "fca_algorithms.h"
+#include "lattice.h"
 
 using namespace std;
 
@@ -26,9 +27,17 @@ int main() {
 
     auto concepts = ThetaSophia(context);
 
-    for (const auto& c : concepts) {
-        cout << c << endl;
-    }
+    FCA::Lattice lattice(move(concepts));
+    size_t i = 0;
+    for (const auto& c : lattice.GetConcepts())
+        cout << i++ << ' ' << c << endl;
 
+    i = 0;
+    for (const auto& vec : lattice.GetConnections()) {
+        cout << i++ << ": ";
+        for (size_t index : vec)
+            cout << index << ',';
+        cout << endl;
+    }
     return 0;
 }
