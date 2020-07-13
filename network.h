@@ -1,5 +1,6 @@
 #ifndef FCANN_NETWORK_H
 #define FCANN_NETWORK_H
+#include <optional>
 #include <vector>
 
 namespace NN {
@@ -9,6 +10,13 @@ namespace NN {
     using Data = std::vector<double>;
 
     Data ExtractOutputs(const Layer&);
+
+    struct NetworkStructure {
+        explicit NetworkStructure(std::vector<size_t> layers_size);
+        std::vector<size_t> layers_size;
+        std::vector<std::vector<std::optional<std::vector<size_t>>>> connections;
+        size_t size() const { return layers_size.size(); }
+    };
 
     struct Connection {
         Neuron* source = nullptr;
@@ -24,6 +32,7 @@ namespace NN {
     public:
         explicit Neuron(double output = 1.0);
         explicit Neuron(Layer& prev_layer);
+        Neuron(Layer& prev_layer, const std::vector<size_t>& input_numbers);
 
         double FeedForward() const;
         inline void SetOutput(double val) const { output = val; }
@@ -49,7 +58,7 @@ namespace NN {
 
     class Network {
     public:
-        using Structure = std::vector<size_t>;
+        using Structure = NetworkStructure;
 
         explicit Network(const Structure&);
 

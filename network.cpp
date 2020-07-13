@@ -15,6 +15,13 @@ namespace NN {
         return data;
     }
 
+    NetworkStructure::NetworkStructure(std::vector<size_t> layers_size_)
+      : layers_size(move(layers_size_)), connections(layers_size.size())
+    {
+        for (size_t i = 1; i < layers_size.size(); ++i)
+            connections[i].resize(layers_size[i]);
+    }
+
     Neuron::Neuron(double output)
       : output(output)
     {
@@ -26,6 +33,14 @@ namespace NN {
         // TODO: weights generation.
         for (size_t n = 0; n < prev_layer.size(); ++n)
             inputs[n].source = &prev_layer[n];
+    }
+
+    Neuron::Neuron(Layer& prev_layer, const std::vector<size_t>& input_numbers)
+      : inputs(input_numbers.size())
+    {
+        // TODO: weights generation.
+        for (size_t n = 0; n < input_numbers.size(); ++n)
+            inputs[n].source = &prev_layer[input_numbers[n]];
     }
 
     double Neuron::FeedForward() const {
@@ -82,7 +97,7 @@ namespace NN {
     const double Neuron::alpha = 0.5;
 
     Network::Network(const Network::Structure& structure)
-      : input_size(structure[0])
+      : input_size(structure.layers_size[0])
     {
         layers.reserve(structure.size());
         for (size_t i = 0; i < structure.size(); ++i) {
@@ -90,7 +105,14 @@ namespace NN {
                 layers.emplace_back(input_size);
             } else {
                 auto& prev_layer = layers.back();
-                layers.emplace_back(structure[i], Neuron(prev_layer));
+                layers.emplace_back();
+                layers.back().reserve(structure.layers_size[i] + 1u);
+                assert(structure.connections[i].size() == structure.layers_size[i]);
+                for (const auto& connections : structure.connections[i])
+                    if (connections.has_value())
+                        layers.back().emplace_back(prev_layer, *connections);
+                    else
+                        layers.back().emplace_back(prev_layer);
             }
             // Bias neuron with output value 1.
             if (i + 1u != structure.size())
