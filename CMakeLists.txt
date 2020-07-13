@@ -5,5 +5,5 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(fcai)
 
-add_executable(FCANN main.cpp)
+add_executable(FCANN main.cpp fca_algorithms.h fca_algorithms.cpp)
 target_link_libraries(FCANN fcai)
