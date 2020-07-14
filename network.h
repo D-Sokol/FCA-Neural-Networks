@@ -1,6 +1,5 @@
 #ifndef FCANN_NETWORK_H
 #define FCANN_NETWORK_H
-#include <optional>
 #include <vector>
 
 namespace NN {
@@ -19,6 +18,7 @@ namespace NN {
     }
 
     struct NetworkStructure {
+        NetworkStructure(std::vector<std::vector<size_t>>);
         std::vector<std::vector<size_t>> connections;
         size_t size() const { return connections.size(); }
     };

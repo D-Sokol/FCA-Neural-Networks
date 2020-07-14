@@ -1,6 +1,6 @@
-#include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <stdexcept>
 #include "network.h"
 
 template <typename T>
@@ -9,6 +9,15 @@ inline T sqr(T x) {
 }
 
 namespace NN {
+    NetworkStructure::NetworkStructure(std::vector<std::vector<size_t>> connections_)
+      : connections(move(connections_))
+    {
+        for (size_t i = 0; i < connections.size(); ++i)
+            for (const auto ref : connections[i])
+                if (ref >= i)
+                    throw std::invalid_argument("Neurons dependence order violation");
+    }
+
     Neuron::Neuron(double output)
       : output(output)
     {
