@@ -40,6 +40,6 @@ int main() {
         cout << endl;
     }
 
-    NN::FCANetwork(lattice, {0, 1}, 3);
+    NN::FCANetwork network(lattice, {0, 1}, 3);
     return 0;
 }

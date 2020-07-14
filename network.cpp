@@ -98,9 +98,11 @@ namespace NN {
 
         for (auto& neuron : neurons)
             neuron.Connect();
-        for (auto& neuron : neurons)
-            if (neuron.OutputConnections() == 0u)
+        for (auto it = neurons.rbegin(); it != neurons.rend(); ++it)
+            if (it->OutputConnections() == 0u)
                 ++output_size;
+            else
+                break;
     }
 
     Data Network::Transform(const Data& data) {

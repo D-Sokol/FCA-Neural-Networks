@@ -71,8 +71,8 @@ namespace NN {
         Data Transform(const Data&);
         Data FitTransform(const Data& input, const Data& target);
     private:
-        size_t input_size;
-        size_t output_size;
+        size_t input_size = 0;
+        size_t output_size = 0;
         std::vector<Neuron> neurons;
     };
 }
