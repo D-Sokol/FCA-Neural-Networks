@@ -48,8 +48,8 @@ namespace NN {
         void CalcGradient();
         void UpdateWeight();
         void Connect();
-    private:
         static double LossFunction(double out, double target);
+    private:
         static double LossFunctionDerivative(double out, double target);
         static double ActivationFunction(double x);
         static double ActivationFunctionDerivative(double activation);
@@ -73,10 +73,14 @@ namespace NN {
 
         inline size_t InputSize() const { return input_size; }
         inline size_t OutputSize() const { return output_size; }
+        inline double GetRecentAverageError() const { return recent_average_error; }
     private:
         size_t input_size = 0;
         size_t output_size = 0;
         std::vector<Neuron> neurons;
+
+        static const double smoothing_factor;
+        double recent_average_error = 0;
     };
 }
 
