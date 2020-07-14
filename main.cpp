@@ -25,7 +25,7 @@ int main() {
         {false,  true,  true,  true}
     });
 
-    auto concepts = ThetaSophia(context);
+    auto concepts = ThetaSophia(context, 2);
 
     FCA::Lattice lattice(move(concepts));
     size_t i = 0;
