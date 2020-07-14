@@ -70,6 +70,9 @@ namespace NN {
 
         Data Transform(const Data&);
         Data FitTransform(const Data& input, const Data& target);
+
+        inline size_t InputSize() const { return input_size; }
+        inline size_t OutputSize() const { return output_size; }
     private:
         size_t input_size = 0;
         size_t output_size = 0;

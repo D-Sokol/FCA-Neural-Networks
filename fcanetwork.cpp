@@ -49,10 +49,18 @@ namespace NN {
     }
 
     Data FCANetwork::Transform(const BitSet& attributes) {
-        return NN::Data();
+        Data tmp(attributes.size());
+        for (size_t i = 0; i < attributes.size(); ++i)
+            tmp[i] = attributes.test(i);
+        return Network::Transform(tmp);
     }
 
     Data FCANetwork::FitTransform(const BitSet& attributes, size_t target_class) {
-        return NN::Data();
+        Data tmp(attributes.size());
+        for (size_t i = 0; i < attributes.size(); ++i)
+            tmp[i] = attributes.test(i);
+        Data tmp_output(Network::OutputSize());
+        tmp_output[target_class] = 1;
+        return Network::FitTransform(tmp, tmp_output);
     }
 }

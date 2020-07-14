@@ -28,18 +28,12 @@ int main() {
     auto concepts = ThetaSophia(context);
 
     FCA::Lattice lattice(move(concepts));
-    size_t i = 0;
-    for (const auto& c : lattice.GetConcepts())
-        cout << i++ << ' ' << c << endl;
-
-    i = 0;
-    for (const auto& vec : lattice.GetConnections()) {
-        cout << i++ << ": ";
-        for (size_t index : vec)
-            cout << index << ',';
-        cout << endl;
-    }
 
     NN::FCANetwork network(lattice, {0, 1}, 3);
+
+    for (size_t epoch = 0; epoch < 400; ++epoch) {
+        auto vec = network.FitTransform(context.Intent(epoch % 4), (epoch & 2) >> 1);
+        cout << "Expected " << ((epoch&2)>>1) << ", got: " << vec[0] << ' ' << vec[1] << endl;
+    }
     return 0;
 }
