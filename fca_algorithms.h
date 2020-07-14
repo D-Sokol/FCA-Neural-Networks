@@ -6,6 +6,8 @@
 
 namespace FCA {
     std::vector<FCA::Concept> ThetaSophia(const FCA::Context&, size_t min_size = 0);
+
+    std::pair<Context, std::vector<size_t>> ReadContext(std::istream& is);
 }
 
 

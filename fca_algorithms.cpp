@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <string>
 #include "fca_algorithms.h"
 
 using namespace std;
@@ -49,5 +50,25 @@ namespace FCA {
         for (auto& [concept_, label] : result)
             return_value.push_back(move(concept_));
         return return_value;
+    }
+
+    pair<Context, vector<size_t>> ReadContext(istream& is) {
+        vector<vector<bool>> data;
+        vector<size_t> targets;
+        string buffer;
+        while (getline(is, buffer)) {
+            data.emplace_back();
+            for (char c : buffer) {
+                if (c == '1')
+                    data.back().push_back(true);
+                else if (c == '0')
+                    data.back().push_back(false);
+            }
+            targets.push_back(data.back().back());
+            data.back().pop_back();
+            if (data.back().size() != data.front().size())
+                throw invalid_argument("Bad context file");
+        }
+        return {Context(data), move(targets)};
     }
 }
