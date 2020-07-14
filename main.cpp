@@ -1,24 +1,43 @@
 #include <iostream>
-#include "fcai/src/fca_concept.h"
-#include "network.h"
+#include <vector>
+#include "fca_algorithms.h"
+#include "lattice.h"
 
 using namespace std;
 
+std::ostream& operator<<(std::ostream& os, const FCA::Concept& c) {
+    for (size_t i = 0; i < c.Extent().size(); ++i)
+        if (c.Extent().test(i))
+            os << i << ',';
+    os << " | ";
+    for (size_t i = 0; i < c.Intent().size(); ++i)
+        if (c.Intent().test(i))
+            os << static_cast<char>('a' + i) << ',';
+
+    return os;
+}
+
 int main() {
-    NN::NetworkStructure structure{{
-        {},
-        {},
-        {0, 1},
-        {0, 1},
-        {},
-        {2, 3, 4}
-    }};
-    NN::Network net(structure);
-    for (size_t i = 0; i < 10; i += 1) {
-        auto vec = net.FitTransform({2, 1}, {0.74});
-        assert(vec.size() == 1u);
-        cout << vec.back() << ' ';
+    FCA::Context context(vector<vector<bool>>{
+        { true, false, false,  true},
+        { true, false,  true, false},
+        {false,  true,  true, false},
+        {false,  true,  true,  true}
+    });
+
+    auto concepts = ThetaSophia(context);
+
+    FCA::Lattice lattice(move(concepts));
+    size_t i = 0;
+    for (const auto& c : lattice.GetConcepts())
+        cout << i++ << ' ' << c << endl;
+
+    i = 0;
+    for (const auto& vec : lattice.GetConnections()) {
+        cout << i++ << ": ";
+        for (size_t index : vec)
+            cout << index << ',';
+        cout << endl;
     }
-    cout << endl;
     return 0;
 }

@@ -14,5 +14,5 @@ ENDIF(DEBUG_MODE MATCHES "ON")
 
 add_subdirectory(fcai)
 
-add_executable(FCANN main.cpp network.cpp network.h)
+add_executable(FCANN main.cpp network.cpp network.h fca_algorithms.h fca_algorithms.cpp lattice.cpp lattice.h)
 target_link_libraries(FCANN fcai)
