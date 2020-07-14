@@ -12,9 +12,11 @@ namespace FCA {
         explicit Lattice(std::vector<Concept>);
         const auto& GetConcepts() const { return concepts; }
         const auto& GetConnections() const { return connections; }
+        const auto& GetLevelStarts() const { return level_starts; }
     private:
         std::vector<Concept> concepts;
         std::vector<std::vector<size_t>> connections;
+        std::vector<size_t> level_starts;
     };
 }
 

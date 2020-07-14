@@ -35,11 +35,19 @@ namespace FCA {
         }
 
         sort(levels_in_list.begin(), levels_in_list.end());
+        level_starts.reserve(levels_in_list.back().first + 1u);
+        level_starts.push_back(0);
         vector<size_t> new_order(levels_in_list.size());
         {
+            size_t last_level = 0;
             size_t old_id = 0;
-            for (auto[level, origin_id] : levels_in_list)
+            for (auto [level, origin_id] : levels_in_list) {
+                if (last_level != level) {
+                    level_starts.push_back(old_id);
+                    last_level = level;
+                }
                 new_order[origin_id] = old_id++;
+            }
         }
 
         concepts.reserve(concept_list.size());
