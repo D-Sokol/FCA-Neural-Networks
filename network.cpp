@@ -119,14 +119,13 @@ namespace NN {
     Data Network::FitTransform(const Data& input, const Data& target) {
         assert(target.size() == output_size);
         auto output = Transform(input);
-        double error = 0.0;
+        recent_average_error = 0.0;
         for (size_t i = 0; i < output_size; ++i) {
             auto& neuron = neurons[neurons.size()-output_size+i];
             neuron.CalcGradient(target[i]);
-            error += Neuron::LossFunction(neuron.GetOutput(), target[i]);
+            recent_average_error += Neuron::LossFunction(neuron.GetOutput(), target[i]);
         }
-        error = sqrt(error / (output_size - 1));
-        recent_average_error = (recent_average_error * smoothing_factor + error) / (smoothing_factor + 1);
+        recent_average_error = sqrt(recent_average_error / (output_size - 1));
 
         for (size_t n = 0; n < neurons.size()-output_size; ++n)
             neurons[n].CalcGradient();
@@ -136,6 +135,4 @@ namespace NN {
 
         return output;
     }
-
-    const double Network::smoothing_factor = 100;
 }

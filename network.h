@@ -79,7 +79,6 @@ namespace NN {
         size_t output_size = 0;
         std::vector<Neuron> neurons;
 
-        static const double smoothing_factor;
         double recent_average_error = 0;
     };
 }

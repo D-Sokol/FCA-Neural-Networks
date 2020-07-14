@@ -11,6 +11,8 @@ namespace NN {
                    size_t max_level, size_t min_level=1);
         Data Transform(const FCA::BitSet& attributes);
         Data FitTransform(const FCA::BitSet& attributes, size_t target_class);
+
+        using Network::GetRecentAverageError;
     };
 }
 
