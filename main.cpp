@@ -15,7 +15,9 @@ int main() {
     }};
     NN::Network net(structure);
     for (size_t i = 0; i < 10; i += 1) {
-        cout << net.FitTransform({2, 1}, {0.74}).back() << ' ';
+        auto vec = net.FitTransform({2, 1}, {0.74});
+        assert(vec.size() == 1u);
+        cout << vec.back() << ' ';
     }
     cout << endl;
     return 0;

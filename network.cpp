@@ -9,13 +9,6 @@ inline T sqr(T x) {
 }
 
 namespace NN {
-    Data ExtractOutputs(const Layer& layer) {
-        Data data(layer.size());
-        for (size_t i = 0; i < layer.size(); ++i)
-            data[i] = layer[i].GetOutput();
-        return data;
-    }
-
     Neuron::Neuron(double output)
       : output(output)
     {
@@ -109,7 +102,7 @@ namespace NN {
         for (size_t n = input_size; n < neurons.size(); ++n) {
             neurons[n].FeedForward();
         }
-        return ExtractOutputs(neurons); // TODO: extract last output_size values.
+        return ExtractOutputs(neurons.end() - output_size, neurons.end());
     }
 
     Data Network::FitTransform(const Data& input, const Data& target) {

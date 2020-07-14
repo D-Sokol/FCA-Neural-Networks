@@ -9,7 +9,15 @@ namespace NN {
     using Layer = std::vector<Neuron>;
     using Data = std::vector<double>;
 
-    Data ExtractOutputs(const Layer&);
+    template <typename Iter>
+    Data ExtractOutputs(Iter begin, Iter end) {
+        static_assert(std::is_same_v<typename std::iterator_traits<Iter>::value_type, Neuron>);
+        Data result;
+        result.reserve(std::distance(begin, end));
+        for (; begin != end; ++begin)
+            result.push_back(begin->GetOutput());
+        return result;
+    }
 
     struct NetworkStructure {
         std::vector<std::vector<size_t>> connections;
