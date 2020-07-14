@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include "network.h"
@@ -15,35 +16,22 @@ namespace NN {
         return data;
     }
 
-    NetworkStructure::NetworkStructure(std::vector<size_t> layers_size_)
-      : layers_size(move(layers_size_)), connections(layers_size.size())
-    {
-        for (size_t i = 1; i < layers_size.size(); ++i)
-            connections[i].resize(layers_size[i]);
-    }
-
     Neuron::Neuron(double output)
       : output(output)
     {
     }
 
-    Neuron::Neuron(Layer& prev_layer)
-      : inputs(prev_layer.size())
+    Neuron::Neuron(std::vector<Neuron>& neurons, const std::vector<size_t>& connections)
+      : inputs(connections.size())
     {
         // TODO: weights generation.
-        for (size_t n = 0; n < prev_layer.size(); ++n)
-            inputs[n].source = &prev_layer[n];
-    }
-
-    Neuron::Neuron(Layer& prev_layer, const std::vector<size_t>& input_numbers)
-      : inputs(input_numbers.size())
-    {
-        // TODO: weights generation.
-        for (size_t n = 0; n < input_numbers.size(); ++n)
-            inputs[n].source = &prev_layer[input_numbers[n]];
+        for (size_t n = 0; n < connections.size(); ++n)
+            inputs[n].source = &neurons[connections[n]];
     }
 
     double Neuron::FeedForward() const {
+        if (inputs.empty())
+            return output;
         output = 0;
         for (const auto& input : inputs) {
             output += input.source->output * input.weight;
@@ -56,7 +44,6 @@ namespace NN {
     }
 
     void Neuron::CalcGradient() {
-        assert(!inputs.empty());
         double tmp = 0;
         for (const auto& connection : outputs)
             tmp += connection.destination->gradient * (*connection.weight);
@@ -97,64 +84,45 @@ namespace NN {
     const double Neuron::alpha = 0.5;
 
     Network::Network(const Network::Structure& structure)
-      : input_size(structure.layers_size[0])
+      : input_size(structure.size()), neurons(structure.size(), Neuron(1.0))
     {
-        layers.reserve(structure.size());
-        for (size_t i = 0; i < structure.size(); ++i) {
-            if (i == 0) {
-                layers.emplace_back(input_size);
-            } else {
-                auto& prev_layer = layers.back();
-                layers.emplace_back();
-                layers.back().reserve(structure.layers_size[i] + 1u);
-                assert(structure.connections[i].size() == structure.layers_size[i]);
-                for (const auto& connections : structure.connections[i])
-                    if (connections.has_value())
-                        layers.back().emplace_back(prev_layer, *connections);
-                    else
-                        layers.back().emplace_back(prev_layer);
-            }
-            // Bias neuron with output value 1.
-            if (i + 1u != structure.size())
-                layers.back().emplace_back(1.0);
+        for (size_t i = 0; i < neurons.size(); ++i) {
+            const auto& inputs = structure.connections[i];
+            if (inputs.empty())
+                continue;
+            neurons[i] = Neuron(neurons, inputs);
+            input_size = std::min(input_size, i);
         }
 
-        for (auto& layer : layers)
-            for (auto& neuron : layer)
-                neuron.Connect();
+        for (auto& neuron : neurons)
+            neuron.Connect();
+        for (auto& neuron : neurons)
+            if (neuron.OutputConnections() == 0u)
+                ++output_size;
     }
 
     Data Network::Transform(const Data& data) const {
         assert(data.size() == input_size);
         for (size_t n = 0; n < input_size; ++n)
-            layers.front()[n].SetOutput(data[n]);
+            neurons[n].SetOutput(data[n]);
 
-        for (size_t i = 1; i < layers.size(); ++i) {
-            bool hidden_layer = (i + 1u != layers.size());
-            for (size_t n = 0; n + hidden_layer < layers[i].size(); ++n) {
-                layers[i][n].FeedForward();
-            }
+        for (size_t n = input_size; n < neurons.size(); ++n) {
+            neurons[n].FeedForward();
         }
-        return ExtractOutputs(layers.back());
+        return ExtractOutputs(neurons); // TODO: extract last output_size values.
     }
 
     Data Network::FitTransform(const Data& input, const Data& target) {
-        assert(target.size() == layers.back().size());
+        assert(target.size() == output_size);
         auto output = Transform(input);
-        for (size_t i = 0; i < target.size(); ++i) {
-            layers.back()[i].CalcGradient(target[i]);
+        for (size_t i = 0; i < output_size; ++i) {
+            neurons[neurons.size()-i-1].CalcGradient(target[i]);
         }
-        for (size_t layer_id = layers.size() - 2; layer_id > 0; --layer_id) {
-            auto& layer = layers[layer_id];
-            for (size_t i = 0; i + 1u < layer.size(); ++i)
-                layer[i].CalcGradient();
-        }
+        for (size_t n = 0; n < neurons.size()-output_size; ++n)
+            neurons[n].CalcGradient();
 
-        for (size_t i = 1; i < layers.size(); ++i) {
-            bool hidden_layer = (i + 1u != layers.size());
-            for (size_t n = 0; n + hidden_layer < layers[i].size(); ++n)
-                layers[i][n].UpdateWeight();
-        }
+        for (auto& neuron : neurons)
+            neuron.UpdateWeight();
 
         return output;
     }

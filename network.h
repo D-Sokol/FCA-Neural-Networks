@@ -12,10 +12,8 @@ namespace NN {
     Data ExtractOutputs(const Layer&);
 
     struct NetworkStructure {
-        explicit NetworkStructure(std::vector<size_t> layers_size);
-        std::vector<size_t> layers_size;
-        std::vector<std::vector<std::optional<std::vector<size_t>>>> connections;
-        size_t size() const { return layers_size.size(); }
+        std::vector<std::vector<size_t>> connections;
+        size_t size() const { return connections.size(); }
     };
 
     struct Connection {
@@ -31,12 +29,13 @@ namespace NN {
     class Neuron {
     public:
         explicit Neuron(double output = 1.0);
-        explicit Neuron(Layer& prev_layer);
-        Neuron(Layer& prev_layer, const std::vector<size_t>& input_numbers);
+        Neuron(std::vector<Neuron>& neurons, const std::vector<size_t>& input_numbers);
 
         double FeedForward() const;
         inline void SetOutput(double val) const { output = val; }
         inline double GetOutput() const { return output; }
+        inline size_t InputConnections() const { return inputs.size(); }
+        inline size_t OutputConnections() const { return outputs.size(); }
 
         void CalcGradient(double target);
         void CalcGradient();
@@ -65,8 +64,9 @@ namespace NN {
         Data Transform(const Data&) const;
         Data FitTransform(const Data& input, const Data& target);
     private:
-        const size_t input_size;
-        std::vector<Layer> layers;
+        size_t input_size;
+        size_t output_size;
+        std::vector<Neuron> neurons;
     };
 }
 
