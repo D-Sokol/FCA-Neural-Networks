@@ -6,7 +6,6 @@
 namespace NN {
     class Neuron;
 
-    using Layer = std::vector<Neuron>;
     using Data = std::vector<double>;
 
     template <typename Iter>
@@ -39,8 +38,8 @@ namespace NN {
         explicit Neuron(double output = 1.0);
         Neuron(std::vector<Neuron>& neurons, const std::vector<size_t>& input_numbers);
 
-        double FeedForward() const;
-        inline void SetOutput(double val) const { output = val; }
+        double FeedForward();
+        inline void SetOutput(double val) { output = val; }
         inline double GetOutput() const { return output; }
         inline size_t InputConnections() const { return inputs.size(); }
         inline size_t OutputConnections() const { return outputs.size(); }
@@ -57,7 +56,7 @@ namespace NN {
         static const double eta;
         static const double alpha;
 
-        mutable double output = 1.0;
+        double output = 1.0;
         double gradient = 0.0;
         std::vector<Connection> inputs;
         std::vector<ReverseConnection> outputs;
@@ -69,7 +68,7 @@ namespace NN {
 
         explicit Network(const Structure&);
 
-        Data Transform(const Data&) const;
+        Data Transform(const Data&);
         Data FitTransform(const Data& input, const Data& target);
     private:
         size_t input_size;

@@ -22,7 +22,7 @@ namespace NN {
             inputs[n].source = &neurons[connections[n]];
     }
 
-    double Neuron::FeedForward() const {
+    double Neuron::FeedForward() {
         if (inputs.empty())
             return output;
         output = 0;
@@ -94,7 +94,7 @@ namespace NN {
                 ++output_size;
     }
 
-    Data Network::Transform(const Data& data) const {
+    Data Network::Transform(const Data& data) {
         assert(data.size() == input_size);
         for (size_t n = 0; n < input_size; ++n)
             neurons[n].SetOutput(data[n]);
