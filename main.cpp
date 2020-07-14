@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "fca_algorithms.h"
-#include "lattice.h"
+#include "fcanetwork.h"
 
 using namespace std;
 
@@ -39,5 +39,7 @@ int main() {
             cout << index << ',';
         cout << endl;
     }
+
+    NN::FCANetwork(lattice, {0, 1}, 3);
     return 0;
 }
