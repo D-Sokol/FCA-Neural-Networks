@@ -120,7 +120,7 @@ namespace NN {
         assert(target.size() == output_size);
         auto output = Transform(input);
         for (size_t i = 0; i < output_size; ++i) {
-            neurons[neurons.size()-i-1].CalcGradient(target[i]);
+            neurons[neurons.size()-output_size+i].CalcGradient(target[i]);
         }
         for (size_t n = 0; n < neurons.size()-output_size; ++n)
             neurons[n].CalcGradient();
