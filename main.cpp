@@ -28,12 +28,18 @@ std::ostream& operator<<(std::ostream& os, const FCA::Concept& c) {
 }
 
 size_t CycleTrainNetwork(NN::FCANetwork& network, const FCA::Context& context,
-                         const vector<size_t>& targets, size_t iter_limit=100) {
+                         const vector<size_t>& targets, size_t iter_limit=16) {
     const size_t objects = context.ObjSize();
     for (size_t epoch = 1; epoch < iter_limit; ++epoch) {
+        size_t corrects = 0;
         for (size_t id = 0; id < objects; ++id) {
-            network.FitTransform(context.Intent(id), targets[id]);
+            auto vec = network.FitTransform(context.Intent(id), targets[id]);
+            size_t y_pred = max_element(vec.begin(), vec.end()) - vec.begin();
+            if (targets[id] == y_pred)
+                ++corrects;
         }
+        cout << "Accuracy after " << epoch << " iterations: "
+             << 100.0 * static_cast<double>(corrects) / objects << '%' << endl;
     }
     return iter_limit;
 }
