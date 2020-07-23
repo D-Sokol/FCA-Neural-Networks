@@ -1,5 +1,7 @@
 #include <cassert>
+#include <chrono>
 #include <cmath>
+#include <random>
 #include <stdexcept>
 #include "network.h"
 
@@ -26,9 +28,17 @@ namespace NN {
     Neuron::Neuron(std::vector<Neuron>& neurons, const std::vector<size_t>& connections)
       : inputs(connections.size())
     {
-        // TODO: weights generation.
-        for (size_t n = 0; n < connections.size(); ++n)
+        static std::mt19937 generator(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        static std::uniform_int_distribution<int8_t> gen;
+        const double xavier_multiplier = sqrt(3.0 / connections.size());
+        for (size_t n = 0; n < connections.size(); ++n) {
             inputs[n].source = &neurons[connections[n]];
+            // Random variable having uniform distribution U[-1, +1]
+            double u = (static_cast<double>(gen(generator)) + 0.5) / 127.5;
+            // Xavier initialization: weight is a random variable from
+            //  a distribution with zero mean and a variance V w = 1/N.
+            inputs[n].weight = u * xavier_multiplier;
+        }
     }
 
     double Neuron::FeedForward() {
