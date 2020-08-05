@@ -5,7 +5,7 @@
 using namespace std;
 
 namespace FCA {
-    vector<Concept> ThetaSophia(const Context& context, size_t min_size) {
+    vector<Concept> ThetaSophia(const Context& context, Predicate keep_concept) {
         // Concept candidate with label that shows if the first one is proper concept.
         using MarkedConcept = pair<Concept, bool>;
         // Projection phi_{-1} produces only one trivial concept,
@@ -39,9 +39,8 @@ namespace FCA {
                     }
                 }
             }
-            // Filter found concepts to have at least min_size elements.
             auto it = remove_if(result.begin(), result.end(),
-                                [=](const MarkedConcept& c) { return !c.second || c.first.ExtentSize() < min_size; });
+                                [=](const MarkedConcept& c) { return !c.second || !keep_concept(c.first); });
             result.erase(it, result.end());
         }
 
