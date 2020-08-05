@@ -60,7 +60,7 @@ size_t CycleTrainNetwork(NN::FCANetwork& network, const FCA::Context& context,
                 ++corrects;
         }
 
-        cout << "Accuracy after " << epoch << " iterations: "
+        cerr << "Accuracy after " << epoch << " iterations: "
              << 100.0 * static_cast<double>(corrects) / test_indexes.size() << '%' << endl;
 
         if (corrects > last_correct_answers) {
@@ -90,9 +90,11 @@ int main() {
     auto [context, targets] = FCA::ReadContext(example);
     auto concepts = ThetaSophia(context);
     FCA::Lattice lattice(move(concepts));
-
-    NN::FCANetwork network(lattice, targets, 2);
-    cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
-    cout << "Accuracy: " << 100.0 * Accuracy(network, context, targets) << '%' << endl;
+    for (size_t max_level = 2; max_level < 5; ++max_level) {
+        NN::FCANetwork network(lattice, targets, 3);
+        cout << "\nUse max_level = " << max_level << '\n';
+        cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
+        cout << "Accuracy: " << 100.0 * Accuracy(network, context, targets) << '%' << endl;
+    }
     return 0;
 }
