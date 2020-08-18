@@ -55,6 +55,9 @@ namespace FCA {
         vector<vector<bool>> data;
         vector<size_t> targets;
         string buffer;
+        size_t extent_size, intent_size;
+        is >> extent_size >> intent_size;
+        is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         while (getline(is, buffer)) {
             data.emplace_back();
             for (char c : buffer) {
