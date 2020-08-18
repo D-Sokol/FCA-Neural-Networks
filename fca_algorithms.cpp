@@ -52,24 +52,23 @@ namespace FCA {
     }
 
     pair<Context, vector<size_t>> ReadContext(istream& is) {
-        vector<vector<bool>> data;
-        vector<size_t> targets;
-        string buffer;
+        constexpr const auto ignore_length = numeric_limits<streamsize>::max();
         size_t extent_size, intent_size;
         is >> extent_size >> intent_size;
-        is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        while (getline(is, buffer)) {
-            data.emplace_back();
-            for (char c : buffer) {
-                if (c == '1')
-                    data.back().push_back(true);
-                else if (c == '0')
-                    data.back().push_back(false);
+        is.ignore(ignore_length, '\n');
+        vector<vector<bool>> data(extent_size, vector<bool>(intent_size));
+        vector<size_t> targets;
+        targets.reserve(extent_size);
+        for (auto& row : data) {
+            // Specialized version of vector<bool> does not allow to simplify this cycle.
+            for (size_t i = 0; i < row.size(); ++i) {
+                bool tmp;
+                is >> tmp;
+                row[i] = tmp;
+                is.ignore(ignore_length, ',');
             }
-            targets.push_back(data.back().back());
-            data.back().pop_back();
-            if (data.back().size() != data.front().size())
-                throw invalid_argument("Bad context file");
+            targets.emplace_back();
+            is >> targets.back();
         }
         return {Context(data), move(targets)};
     }
