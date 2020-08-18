@@ -85,8 +85,14 @@ double Accuracy(NN::FCANetwork& network, const FCA::Context& context, const vect
     return static_cast<double>(corrects) / objects;
 }
 
-int main() {
-    ifstream example("datasets/mammographic_masses.txt");
+int main(int argc, char** argv) {
+    const char* dataset = (argc > 1 ? argv[1] : "datasets/mammographic_masses.txt");
+    ifstream example(dataset);
+    if (!example) {
+        cerr << "Cannot open file: " << dataset << endl;
+        return 1;
+    }
+
     auto [context, targets] = FCA::ReadContext(example);
 
     for (double min_supp = 0.0; min_supp < 1.0; min_supp += 0.1) {
