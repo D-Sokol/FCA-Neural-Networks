@@ -9,6 +9,7 @@ namespace NN {
     public:
         FCANetwork(const FCA::Lattice& lattice, const std::vector<size_t>& target_classes,
                    size_t max_level, size_t min_level=1);
+        explicit FCANetwork(const std::vector<size_t>&);
         Data Transform(const FCA::BitSet& attributes);
         Data FitTransform(const FCA::BitSet& attributes, size_t target_class);
 

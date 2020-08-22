@@ -21,6 +21,8 @@ namespace NN {
         NetworkStructure(std::vector<std::vector<size_t>>);
         std::vector<std::vector<size_t>> connections;
         size_t size() const { return connections.size(); }
+
+        static NetworkStructure FullyConnected(const std::vector<size_t>&);
     };
 
     struct Connection {

@@ -45,7 +45,11 @@ namespace NN {
                            size_t max_level, size_t min_level)
       : Network(GetStructure(lattice, target_classes, min_level, max_level))
     {
+    }
 
+    FCANetwork::FCANetwork(const vector<size_t>& layer_sizes)
+      : Network(NetworkStructure::FullyConnected(layer_sizes))
+    {
     }
 
     Data FCANetwork::Transform(const BitSet& attributes) {

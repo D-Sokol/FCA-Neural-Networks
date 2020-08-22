@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include "network.h"
 
+using namespace std;
+
 template <typename T>
 inline T sqr(T x) {
     return x * x;
@@ -18,6 +20,21 @@ namespace NN {
             for (const auto ref : connections[i])
                 if (ref >= i)
                     throw std::invalid_argument("Neurons dependence order violation");
+    }
+
+    NetworkStructure NetworkStructure::FullyConnected(const vector<size_t>& layer_sizes) {
+        vector<vector<size_t>> connections;
+        connections.reserve(accumulate(layer_sizes.begin(), layer_sizes.end(), 0u));
+        size_t prev_size = 0;
+        size_t next_neuron_id = 0;
+        for (size_t layer_size : layer_sizes) {
+            vector<size_t> inputs(prev_size);
+            iota(inputs.begin(), inputs.end(), next_neuron_id - prev_size);
+            connections.insert(connections.end(), layer_size, inputs);
+            next_neuron_id += layer_size;
+            prev_size = layer_size;
+        }
+        return {move(connections)};
     }
 
     Neuron::Neuron(double output)
