@@ -85,43 +85,54 @@ double Accuracy(NN::FCANetwork& network, const FCA::Context& context, const vect
     return static_cast<double>(corrects) / objects;
 }
 
+int usage(const char* executable);
+
 int main(int argc, char** argv) {
-    const char* dataset = (argc > 1 ? argv[1] : "datasets/mammographic_masses.txt");
-    ifstream example(dataset);
-    if (!example) {
-        cerr << "Cannot open file: " << dataset << endl;
+    if (argc < 3) {
+        return usage(argv[0]);
+    }
+
+    ifstream input_stream(argv[1]);
+    if (!input_stream) {
+        cerr << "Cannot open file: " << argv[1] << endl;
         return 1;
     }
 
-    auto [context, targets] = FCA::ReadContext(example);
+    auto [context, targets] = FCA::ReadContext(input_stream);
 
-    {
-        const vector<size_t> structure = {
-            context.AttrSize(),
-            10,
-            10,
-            *max_element(targets.begin(), targets.end()) + 1
-        };
+    if ("full"s == argv[2]) {
+        vector<size_t> structure(argc - 1u);
+        structure.front() = context.AttrSize();
+        structure.back() = *max_element(targets.begin(), targets.end()) + 1;
+        for (size_t i = 1; i < argc - 2u; ++i) {
+            structure[i] = stoi(argv[i+2]);
+        }
         NN::FCANetwork network(structure);
-        cout << "Using fully connected network " << structure << '\n';
         cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
         cout << "Accuracy: " << 100.0 * Accuracy(network, context, targets) << '%' << endl;
-    }
+    } else if ("min_supp"s == argv[2]) {
+        if (argc != 5) {
+            cerr << "Expected arguments: 'min_supp' min_supp max_level" << endl;
+            return 3;
+        }
+        double min_supp = stod(argv[3]);
+        size_t max_level = stoi(argv[4]);
 
-    for (double min_supp = 0.0; min_supp < 1.0; min_supp += 0.1) {
         FCA::Predicate pred = [&](const FCA::Concept& c) {
             return c.ExtentSize() >= min_supp * c.Extent().size();
         };
         auto concepts = ThetaSophia(context, pred);
         FCA::Lattice lattice(move(concepts));
-        for (size_t max_level = 2; max_level < 5; ++max_level) {
-            if (lattice.GetLevelStarts().size() <= max_level)
-                break;
-            NN::FCANetwork network(lattice, targets, max_level);
-            cout << "\nUsing max_level = " << max_level << ", min_supp = " << min_supp << '\n';
-            cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
-            cout << "Accuracy: " << 100.0 * Accuracy(network, context, targets) << '%' << endl;
-        }
+        NN::FCANetwork network(lattice, targets, max_level);
+        cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
+        cout << "Accuracy: " << 100.0 * Accuracy(network, context, targets) << '%' << endl;
+    } else {
+        return usage(argv[0]);
     }
     return 0;
+}
+
+int usage(const char* executable) {
+    cerr << "Usage: " << executable << " dataset ('full' | 'min_supp') number [number ...]" << endl;
+    return 2;
 }
