@@ -108,8 +108,9 @@ int main(int argc, char** argv) {
             structure[i] = stoi(argv[i+2]);
         }
         NN::FCANetwork network(structure);
-        cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
-        cout << "Accuracy: " << 100.0 * Accuracy(network, context, targets) << '%' << endl;
+        // cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
+        CycleTrainNetwork(network, context, targets);
+        cout << 100.0 * Accuracy(network, context, targets) << endl;
     } else if ("min_supp"s == argv[2]) {
         if (argc != 5) {
             cerr << "Expected arguments: 'min_supp' min_supp max_level" << endl;
@@ -125,8 +126,9 @@ int main(int argc, char** argv) {
         FCA::Lattice lattice(move(concepts));
         try {
             NN::FCANetwork network(lattice, targets, max_level);
-            cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
-            cout << "Accuracy: " << 100.0 * Accuracy(network, context, targets) << '%' << endl;
+            // cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
+            CycleTrainNetwork(network, context, targets);
+            cout << 100.0 * Accuracy(network, context, targets) << endl;
         } catch (const out_of_range& e) {
             cerr << e.what() << endl;
             return 4;
