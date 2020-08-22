@@ -123,9 +123,14 @@ int main(int argc, char** argv) {
         };
         auto concepts = ThetaSophia(context, pred);
         FCA::Lattice lattice(move(concepts));
-        NN::FCANetwork network(lattice, targets, max_level);
-        cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
-        cout << "Accuracy: " << 100.0 * Accuracy(network, context, targets) << '%' << endl;
+        try {
+            NN::FCANetwork network(lattice, targets, max_level);
+            cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
+            cout << "Accuracy: " << 100.0 * Accuracy(network, context, targets) << '%' << endl;
+        } catch (const out_of_range& e) {
+            cerr << e.what() << endl;
+            return 4;
+        }
     } else {
         return usage(argv[0]);
     }

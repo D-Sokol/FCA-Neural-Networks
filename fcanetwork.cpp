@@ -11,10 +11,10 @@ namespace NN {
                                   size_t min_level, size_t max_level) {
         size_t input_size = lattice.GetConcepts().front().Intent().size();
         size_t output_size = *max_element(target_classes.begin(), target_classes.end()) + 1;
-        size_t begin = lattice.GetLevelStarts()[min_level];
-        size_t end = lattice.GetLevelStarts()[max_level];
-        size_t first_layer_size = lattice.GetLevelStarts()[min_level+1] - begin;
-        size_t last_layer_size = end - lattice.GetLevelStarts()[max_level-1];
+        size_t begin = lattice.GetLevelStarts().at(min_level);
+        size_t end = lattice.GetLevelStarts().at(max_level);
+        size_t first_layer_size = lattice.GetLevelStarts().at(min_level+1) - begin;
+        size_t last_layer_size = end - lattice.GetLevelStarts().at(max_level-1);
 
         const auto& connections = lattice.GetConnections();
         vector<vector<size_t>> connections_shifted(connections.begin() + begin, connections.begin() + end);
