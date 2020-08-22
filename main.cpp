@@ -95,6 +95,19 @@ int main(int argc, char** argv) {
 
     auto [context, targets] = FCA::ReadContext(example);
 
+    {
+        const vector<size_t> structure = {
+            context.AttrSize(),
+            10,
+            10,
+            *max_element(targets.begin(), targets.end()) + 1
+        };
+        NN::FCANetwork network(structure);
+        cout << "Using fully connected network " << structure << '\n';
+        cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
+        cout << "Accuracy: " << 100.0 * Accuracy(network, context, targets) << '%' << endl;
+    }
+
     for (double min_supp = 0.0; min_supp < 1.0; min_supp += 0.1) {
         FCA::Predicate pred = [&](const FCA::Concept& c) {
             return c.ExtentSize() >= min_supp * c.Extent().size();
