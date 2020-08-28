@@ -15,6 +15,9 @@ namespace NN {
 
         using Network::GetRecentAverageError;
     };
+
+    double Accuracy(FCANetwork&, const FCA::Context&, const std::vector<size_t>& targets);
+    size_t CycleTrainNetwork(FCANetwork&, const FCA::Context&, const std::vector<size_t>&, size_t iter_limit=100);
 }
 
 
