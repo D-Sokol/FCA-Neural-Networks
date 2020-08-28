@@ -4,6 +4,7 @@
 #include <vector>
 #include "fca_algorithms.h"
 #include "fcanetwork.h"
+#include "measures.h"
 
 using namespace std;
 using namespace NN;
@@ -62,9 +63,7 @@ int main(int argc, char** argv) {
         double min_supp = stod(argv[3]);
         size_t max_level = stoi(argv[4]);
 
-        FCA::Predicate pred = [&](const FCA::Concept& c) {
-            return c.ExtentSize() >= min_supp * c.Extent().size();
-        };
+        FCA::Predicate pred = FCA::Bind(Support, min_supp);
         auto concepts = ThetaSophia(context, pred);
         FCA::Lattice lattice(move(concepts));
         try {
