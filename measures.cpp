@@ -12,7 +12,7 @@ double CVMeasure(const FCA::Concept& c, const FCA::Context& context) {
         if (b.test(i)) {
             temp.set(i);
             // May be cached for the different concepts in the real applications.
-            result += context.DrvtAttr(temp).count();
+            result += 1.0 / context.DrvtAttr(temp).count();
             temp.reset(i);
         }
     }
@@ -28,7 +28,7 @@ double CFCMeasure(const FCA::Concept& c, const FCA::Context& context) {
         auto y_prime = context.DrvtAttr(temp);
         temp.reset(i);
 
-        result += (a & y_prime).count() / y_prime.count();
+        result += static_cast<double>((a & y_prime).count()) / y_prime.count();
     }
     return result / c.ExtentSize();
 }
