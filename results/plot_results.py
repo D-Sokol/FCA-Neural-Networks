@@ -35,12 +35,17 @@ if __name__ == '__main__':
         for max_level, subset in data.groupby('max_level'):
             averaged = subset.groupby('min_supp').mean()
             ax.plot(averaged.index, averaged['accuracy'], marker='*', label=f'Min supp (lvl={max_level})')
-        else:
-            ax.set_xlabel('Minimal concept support')
-            ax.set_xlim(0.0, 1.0)
-            ax.set_xticks(np.arange(0.0, 1.1, 0.1))
-            # ax.legend()
-            del ax
+        data = pd.read_csv(filename_template.format(method='full-min_cv', dataset=dataset))
+        for max_level, subset in data.groupby('max_level'):
+            averaged = subset.groupby('min_cv').mean()
+            ax.plot(averaged.index, averaged['accuracy'], marker='*', label=f'Min CV (lvl={max_level})')
+        data = pd.read_csv(filename_template.format(method='full-min_cfc', dataset=dataset))
+        for max_level, subset in data.groupby('max_level'):
+            averaged = subset.groupby('min_cfc').mean()
+            ax.plot(averaged.index, averaged['accuracy'], marker='*', label=f'Min CFC (lvl={max_level})')
+        ax.set_xlabel('Threshold for $\\mathcal{M}$-metric')
+        ax.set_xlim(0.0, 1.0)
+        ax.set_xticks(np.arange(0.0, 1.1, 0.1))
 
         plt.gcf().legend()
         plt.savefig(f'{dataset}-accuracy.pdf')
