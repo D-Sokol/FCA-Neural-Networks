@@ -75,6 +75,46 @@ int main(int argc, char** argv) {
             cerr << e.what() << endl;
             return 4;
         }
+    } else if ("cv"s == argv[2]) {
+        if (argc != 5) {
+            cerr << "Expected arguments: 'cv' min_cv max_level" << endl;
+            return 3;
+        }
+        double min_cv = stod(argv[3]);
+        size_t max_level = stoi(argv[4]);
+
+        FCA::Predicate pred = [=,&context=context](const FCA::Concept& c){ return CVMeasure(c, context) >= min_cv; };
+        auto concepts = ThetaSophia(context, pred);
+        FCA::Lattice lattice(move(concepts));
+        try {
+            NN::FCANetwork network(lattice, targets, max_level);
+            // cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
+            CycleTrainNetwork(network, context, targets);
+            cout << 100.0 * Accuracy(network, context, targets) << endl;
+        } catch (const out_of_range& e) {
+            cerr << e.what() << endl;
+            return 4;
+        }
+    } else if ("cfc"s == argv[2]) {
+        if (argc != 5) {
+            cerr << "Expected arguments: 'cfc' min_cfc max_level" << endl;
+            return 3;
+        }
+        double min_cfc = stod(argv[3]);
+        size_t max_level = stoi(argv[4]);
+
+        FCA::Predicate pred = [=,&context=context](const FCA::Concept& c){ return CVMeasure(c, context) >= min_cfc; };
+        auto concepts = ThetaSophia(context, pred);
+        FCA::Lattice lattice(move(concepts));
+        try {
+            NN::FCANetwork network(lattice, targets, max_level);
+            // cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
+            CycleTrainNetwork(network, context, targets);
+            cout << 100.0 * Accuracy(network, context, targets) << endl;
+        } catch (const out_of_range& e) {
+            cerr << e.what() << endl;
+            return 4;
+        }
     } else {
         return usage(argv[0]);
     }
