@@ -42,7 +42,7 @@ for dataset in "${datasets[@]}"; do
   output="results/full-min_supp-$(basename "$dataset" ".txt").txt"
   echo "dataset,min_supp,max_level,accuracy" >"$output"
   for min_supp in $(seq 0.1 0.05 0.9); do
-    for max_level in {1..4}; do
+    for max_level in 2; do
       for i in {1..10}; do
         echo "min_support based network, min_supp=${min_supp}, max_level=${max_level}, iteration=${i}"
         accuracy=$(${EXEC} "${dataset}" min_supp $min_supp $max_level 2>/dev/null)
@@ -59,7 +59,7 @@ for dataset in "${datasets[@]}"; do
   output="results/full-min_cv-$(basename "$dataset" ".txt").txt"
   echo "dataset,min_cv,max_level,accuracy" >"$output"
   for min_cv in $(seq 0.1 0.05 0.9); do
-    for max_level in {1..4}; do
+    for max_level in 2; do
       for i in {1..10}; do
         echo "min_cv based network, min_cv=${min_cv}, max_level=${max_level}, iteration=${i}"
         accuracy=$(${EXEC} "${dataset}" min_cv $min_cv $max_level 2>/dev/null)
@@ -76,7 +76,7 @@ for dataset in "${datasets[@]}"; do
   output="results/full-min_cfc-$(basename "$dataset" ".txt").txt"
   echo "dataset,min_supp,max_level,accuracy" >"$output"
   for min_cfc in $(seq 0.1 0.05 0.9); do
-    for max_level in {1..4}; do
+    for max_level in 2; do
       for i in {1..10}; do
         echo "min_cfc based network, min_cfc=${min_cfc}, max_level=${max_level}, iteration=${i}"
         accuracy=$(${EXEC} "${dataset}" min_cfc $min_cfc $max_level 2>/dev/null)
