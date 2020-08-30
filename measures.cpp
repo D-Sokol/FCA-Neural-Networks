@@ -20,15 +20,19 @@ double CVMeasure(const FCA::Concept& c, const FCA::Context& context) {
 }
 
 double CFCMeasure(const FCA::Concept& c, const FCA::Context& context) {
-    const auto& a = c.Extent();
-    double result = 0;
-    FCA::BitSet temp(context.AttrSize());
-    for (size_t i = 0; i < context.AttrSize(); ++i) {
-        temp.set(i);
-        auto y_prime = context.DrvtAttr(temp);
-        temp.reset(i);
+    if (size_t extent_size = c.ExtentSize()) {
+        const auto& a = c.Extent();
+        double result = 0;
+        FCA::BitSet temp(context.AttrSize());
+        for (size_t i = 0; i < context.AttrSize(); ++i) {
+            temp.set(i);
+            auto y_prime = context.DrvtAttr(temp);
+            temp.reset(i);
 
-        result += static_cast<double>((a & y_prime).count()) / y_prime.count();
+            result += static_cast<double>((a & y_prime).count()) / y_prime.count();
+        }
+        return result / extent_size;
+    } else {
+        return 0.0;
     }
-    return result / c.ExtentSize();
 }
