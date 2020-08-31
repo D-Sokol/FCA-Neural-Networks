@@ -12,7 +12,7 @@ if __name__ == '__main__':
     for dataset in datasets:
         plt.figure(figsize=(12,7))
 
-        plt.title('Accuracy of different network architectures')
+        plt.title('Accuracy for dataset "{}"'.format(dataset))
         plt.xlabel('Neurons')
         plt.xlim(1, 21)
         plt.xticks(range(1, 21))
