@@ -41,7 +41,7 @@ if __name__ == '__main__':
             ax.plot(averaged.index, averaged['accuracy'], marker='*', label=f'Min CV (lvl={max_level})')
         data = pd.read_csv(filename_template.format(method='full-min_cfc', dataset=dataset))
         for max_level, subset in data.groupby('max_level'):
-            averaged = subset.groupby('min_cfc').mean()
+            averaged = subset.groupby('min_supp').mean()
             ax.plot(averaged.index, averaged['accuracy'], marker='*', label=f'Min CFC (lvl={max_level})')
         ax.set_xlabel('Threshold for $\\mathcal{M}$-metric')
         ax.set_xlim(0.0, 1.0)
