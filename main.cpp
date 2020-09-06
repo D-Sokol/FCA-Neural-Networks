@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
         double min_supp = stod(argv[3]);
         size_t max_level = stoi(argv[4]);
 
-        FCA::Predicate pred = FCA::Bind(Support, min_supp);
+        FCA::Predicate pred = [=](const FCA::Concept& c, size_t){ return Support(c) >= min_supp; };
         auto concepts = ThetaSophia(context, pred);
         FCA::Lattice lattice(move(concepts));
         try {
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
         double min_cv = stod(argv[3]);
         size_t max_level = stoi(argv[4]);
 
-        FCA::Predicate pred = [=,&context=context](const FCA::Concept& c){ return CVMeasure(c, context, 10000000) >= min_cv; };
+        FCA::Predicate pred = [=,&context=context](const FCA::Concept& c, size_t ac){ return CVMeasure(c, context, ac) >= min_cv; };
         auto concepts = ThetaSophia(context, pred);
         FCA::Lattice lattice(move(concepts));
         try {
@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
         double min_cfc = stod(argv[3]);
         size_t max_level = stoi(argv[4]);
 
-        FCA::Predicate pred = [=,&context=context](const FCA::Concept& c){ return CVMeasure(c, context, 10000000) >= min_cfc; };
+        FCA::Predicate pred = [=,&context=context](const FCA::Concept& c, size_t ac){ return CVMeasure(c, context, ac) >= min_cfc; };
         auto concepts = ThetaSophia(context, pred);
         FCA::Lattice lattice(move(concepts));
         try {

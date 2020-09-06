@@ -13,7 +13,7 @@ namespace FCA {
         vector<MarkedConcept> result = {{{context.ObjSize(), context.AttrSize()}, true}};
         result.front().first.Extent().flip();
 
-        for (size_t i = 0; i < context.AttrSize(); ++i) {
+        for (size_t added_attr_id = 0; added_attr_id < context.AttrSize(); ++added_attr_id) {
             // Consider projection phi_i that consider attributes from 0 to i-th, inclusively.
             const size_t concepts_number = result.size();
             for (size_t k = 0; k < concepts_number; ++k) {
@@ -21,7 +21,7 @@ namespace FCA {
                     // Concept (A, B) should be kept in the result, if the set A_{-} is not empty
                     // A_{-} = {a \in A | a does not possess attribute i}
                     auto& concept_ = result[k];
-                    auto ext = context.Extent(i);
+                    auto ext = context.Extent(added_attr_id);
                     ext.flip();
                     ext &= concept_.first.Extent();
                     if (ext.any())
@@ -32,15 +32,15 @@ namespace FCA {
                     // where A_{+} = {a \in A | a possess attribute i}
                     auto& concept_ = result[k];  // Reference from the previous block may be invalidated.
 
-                    concept_.first.Extent() &= context.Extent(i);
-                    concept_.first.Intent().set(i);
-                    if (!concept_.first.Intent().is_prefix_equal(context.DrvtObj(concept_.first.Extent()), i)) {
+                    concept_.first.Extent() &= context.Extent(added_attr_id);
+                    concept_.first.Intent().set(added_attr_id);
+                    if (!concept_.first.Intent().is_prefix_equal(context.DrvtObj(concept_.first.Extent()), added_attr_id)) {
                         concept_.second = false;
                     }
                 }
             }
             auto it = remove_if(result.begin(), result.end(),
-                                [=](const MarkedConcept& c) { return !c.second || !keep_concept(c.first); });
+                                [=](const MarkedConcept& c) { return !c.second || !keep_concept(c.first, added_attr_id+1); });
             result.erase(it, result.end());
         }
 
