@@ -14,6 +14,7 @@ namespace NN {
         Data FitTransform(const FCA::BitSet& attributes, size_t target_class);
 
         using Network::GetRecentAverageError;
+        using Network::NeuronsNumber;
     };
 
     double Accuracy(FCANetwork&, const FCA::Context&, const std::vector<size_t>& targets);

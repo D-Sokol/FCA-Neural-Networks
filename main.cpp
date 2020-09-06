@@ -110,7 +110,7 @@ int print_accuracy(const FCA::Lattice& lattice, const FCA::Context& context,
         NN::FCANetwork network(lattice, targets, max_level);
         // cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
         CycleTrainNetwork(network, context, targets);
-        cout << 100.0 * Accuracy(network, context, targets) << endl;
+        cout << network.NeuronsNumber() << ' ' << 100.0 * Accuracy(network, context, targets) << endl;
         return 0;
     } catch (const out_of_range& e) {
         cerr << e.what() << endl;
@@ -123,6 +123,6 @@ int print_accuracy(const vector<size_t>& structure, const FCA::Context& context,
     NN::FCANetwork network(structure);
     // cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
     CycleTrainNetwork(network, context, targets);
-    cout << 100.0 * Accuracy(network, context, targets) << endl;
+    cout << network.NeuronsNumber() << ' ' << 100.0 * Accuracy(network, context, targets) << endl;
     return 0;
 }

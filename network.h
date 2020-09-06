@@ -75,6 +75,7 @@ namespace NN {
 
         inline size_t InputSize() const { return input_size; }
         inline size_t OutputSize() const { return output_size; }
+        inline size_t NeuronsNumber() const { return neurons.size(); }
         inline double GetRecentAverageError() const { return recent_average_error; }
     private:
         size_t input_size = 0;

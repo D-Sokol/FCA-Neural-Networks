@@ -14,8 +14,6 @@ if __name__ == '__main__':
 
         plt.title('Accuracy for dataset "{}"'.format(dataset))
         plt.xlabel('Neurons')
-        plt.xlim(1, 21)
-        plt.xticks(range(1, 21))
         plt.ylabel('Accuracy, %')
         plt.ylim(-5, 105)
         plt.yticks(range(0, 110, 10))
@@ -30,18 +28,20 @@ if __name__ == '__main__':
         plt.plot(averaged.index, averaged['accuracy'], 'b--.', label='Fully connected (2 hidden layers)')
         # plt.legend()
 
-        ax = plt.gca().twiny()
+        # ax = plt.gca().twiny()
+        ax = plt.gca()
+
         data = pd.read_csv(filename_template.format(method='full-min_supp', dataset=dataset))
         for max_level, subset in data.groupby('max_level'):
-            averaged = subset.groupby('min_supp').mean()
+            averaged = subset.groupby('neurons').mean()
             ax.plot(averaged.index, averaged['accuracy'], marker='*', label=f'Min supp (lvl={max_level})')
         data = pd.read_csv(filename_template.format(method='full-min_cv', dataset=dataset))
         for max_level, subset in data.groupby('max_level'):
-            averaged = subset.groupby('min_cv').mean()
+            averaged = subset.groupby('neurons').mean()
             ax.plot(averaged.index, averaged['accuracy'], marker='*', label=f'Min CV (lvl={max_level})')
         data = pd.read_csv(filename_template.format(method='full-min_cfc', dataset=dataset))
         for max_level, subset in data.groupby('max_level'):
-            averaged = subset.groupby('min_supp').mean()
+            averaged = subset.groupby('neurons').mean()
             ax.plot(averaged.index, averaged['accuracy'], marker='*', label=f'Min CFC (lvl={max_level})')
         ax.set_xlabel('Threshold for $\\mathcal{M}$-metric')
         ax.set_xlim(0.0, 1.0)
