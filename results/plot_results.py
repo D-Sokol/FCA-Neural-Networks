@@ -44,8 +44,8 @@ if __name__ == '__main__':
             averaged = subset.groupby('neurons').mean()
             ax.plot(averaged.index, averaged['accuracy'], marker='*', label=f'Min CFC (lvl={max_level})')
         ax.set_xlabel('Threshold for $\\mathcal{M}$-metric')
-        ax.set_xlim(0.0, 1.0)
-        ax.set_xticks(np.arange(0.0, 1.1, 0.1))
+        # ax.set_xlim(0.0, 1.0)
+        # ax.set_xticks(np.arange(0.0, 1.1, 0.1))
 
         plt.gcf().legend()
         plt.savefig(f'{dataset}-accuracy.pdf')
