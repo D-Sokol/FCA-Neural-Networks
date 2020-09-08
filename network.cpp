@@ -113,7 +113,7 @@ namespace NN {
     const double Neuron::alpha = 0.5;
 
     Network::Network(const Network::Structure& structure)
-      : input_size(structure.size()), neurons(structure.size(), Neuron(1.0))
+      : input_size(structure.size()), neurons(structure.size())
     {
         for (size_t i = 0; i < neurons.size(); ++i) {
             const auto& inputs = structure.connections[i];
