@@ -11,6 +11,10 @@ namespace NN {
                    size_t max_level, size_t min_level=1);
         explicit FCANetwork(const std::vector<size_t>&);
         explicit FCANetwork(const NetworkStructure&);
+
+        static NetworkStructure GetStructure(const FCA::Lattice& lattice, const std::vector<size_t>& target_classes,
+                                             size_t min_level, size_t max_level);
+
         Data Transform(const FCA::BitSet& attributes);
         Data FitTransform(const FCA::BitSet& attributes, size_t target_class);
 

@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <numeric>
+#include <type_traits>
 #include <vector>
 #include "fca_algorithms.h"
 #include "fcanetwork.h"
@@ -27,6 +29,13 @@ std::ostream& operator<<(std::ostream& os, const FCA::Concept& c) {
             os << static_cast<char>('a' + i) << ',';
 
     return os;
+}
+
+template <typename RandomIt>
+typename iterator_traits<RandomIt>::value_type Average(RandomIt begin, RandomIt end) {
+    using value = typename iterator_traits<RandomIt>::value_type;
+    static_assert(is_arithmetic_v<value>);
+    return accumulate(begin, end, static_cast<value>(0)) / distance(begin, end);
 }
 
 int usage(const char* executable);
@@ -107,10 +116,9 @@ int usage(const char* executable) {
 int print_accuracy(const FCA::Lattice& lattice, const FCA::Context& context,
                    const vector<size_t>& targets, size_t max_level) {
     try {
-        NN::FCANetwork network(lattice, targets, max_level);
-        // cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
-        CycleTrainNetwork(network, context, targets);
-        cout << network.NeuronsNumber() << ' ' << 100.0 * Accuracy(network, context, targets) << endl;
+        auto structure = NN::FCANetwork::GetStructure(lattice, targets, 1, max_level);
+        auto accuracies = CrossValidationAccuracies(structure, context, targets);
+        cout << structure.size() << ' ' << 100.0 * Average(accuracies.begin(), accuracies.end()) << endl;
         return 0;
     } catch (const out_of_range& e) {
         cerr << e.what() << endl;
@@ -120,9 +128,7 @@ int print_accuracy(const FCA::Lattice& lattice, const FCA::Context& context,
 
 int print_accuracy(const vector<size_t>& structure, const FCA::Context& context,
                    const vector<size_t>& targets) {
-    NN::FCANetwork network(structure);
-    // cout << CycleTrainNetwork(network, context, targets) << " iterations passed\n";
-    CycleTrainNetwork(network, context, targets);
-    cout << network.NeuronsNumber() << ' ' << 100.0 * Accuracy(network, context, targets) << endl;
+    auto accuracies = CrossValidationAccuracies(NetworkStructure::FullyConnected(structure), context, targets);
+    cout << structure.size() << ' ' << 100.0 * Average(accuracies.begin(), accuracies.end()) << endl;
     return 0;
 }
