@@ -42,7 +42,7 @@ int usage(const char* executable);
 
 int print_accuracy(const FCA::Lattice& lattice, const FCA::Context& context,
                    const vector<size_t>& targets, size_t max_level);
-int print_accuracy(const vector<size_t>& structure, const FCA::Context& context,
+int print_accuracy(const vector<size_t>& layer_sizes, const FCA::Context& context,
                    const vector<size_t>& targets);
 
 int main(int argc, char** argv) {
@@ -126,9 +126,10 @@ int print_accuracy(const FCA::Lattice& lattice, const FCA::Context& context,
     }
 }
 
-int print_accuracy(const vector<size_t>& structure, const FCA::Context& context,
+int print_accuracy(const vector<size_t>& layer_sizes, const FCA::Context& context,
                    const vector<size_t>& targets) {
-    auto accuracies = CrossValidationAccuracies(NetworkStructure::FullyConnected(structure), context, targets);
+    auto structure = NetworkStructure::FullyConnected(layer_sizes);
+    auto accuracies = CrossValidationAccuracies(structure, context, targets);
     cout << structure.size() << ' ' << 100.0 * Average(accuracies.begin(), accuracies.end()) << endl;
     return 0;
 }
