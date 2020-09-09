@@ -36,6 +36,12 @@ namespace NN {
     };
 
     class Neuron {
+    protected:
+        friend class Network;
+        Neuron(const Neuron&) = default;
+        Neuron(Neuron&&) = default;
+        Neuron& operator=(const Neuron&) = default;
+        Neuron& operator=(Neuron&&) = default;
     public:
         explicit Neuron(double output = 1.0);
         Neuron(std::vector<Neuron>& neurons, const std::vector<size_t>& input_numbers);
@@ -69,6 +75,10 @@ namespace NN {
         using Structure = NetworkStructure;
 
         explicit Network(const Structure&);
+        Network(const Network&) = delete;
+        Network(Network&&) = delete;
+        Network& operator=(const Network&) = delete;
+        Network& operator=(Network&&) = delete;
 
         Data Transform(const Data&);
         Data FitTransform(const Data& input, const Data& target);

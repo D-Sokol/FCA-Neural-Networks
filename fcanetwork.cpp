@@ -8,8 +8,8 @@ using namespace std;
 namespace NN {
     using namespace FCA;
 
-    NetworkStructure GetStructure(const Lattice& lattice, const vector<size_t>& target_classes,
-                                  size_t min_level, size_t max_level) {
+    NetworkStructure FCANetwork::GetStructure(const Lattice& lattice, const vector<size_t>& target_classes,
+                                              size_t min_level, size_t max_level) {
         size_t input_size = lattice.GetConcepts().front().Intent().size();
         size_t output_size = *max_element(target_classes.begin(), target_classes.end()) + 1;
         size_t begin = lattice.GetLevelStarts().at(min_level);
@@ -50,6 +50,11 @@ namespace NN {
 
     FCANetwork::FCANetwork(const vector<size_t>& layer_sizes)
       : Network(NetworkStructure::FullyConnected(layer_sizes))
+    {
+    }
+
+    FCANetwork::FCANetwork(const NetworkStructure& structure)
+      : Network(structure)
     {
     }
 
@@ -125,5 +130,51 @@ namespace NN {
             last_correct_answers = corrects;
         }
         return iter_limit;
+    }
+
+    vector<double> CrossValidationAccuracies(const NetworkStructure& structure, const FCA::Context& context, const vector<size_t>& targets, size_t iter_limit, size_t split_number) {
+        const auto objects = context.ObjSize();
+        vector<size_t> shuffled_indices(objects);
+        iota(shuffled_indices.begin(), shuffled_indices.end(), 0);
+        random_shuffle(shuffled_indices.begin(), shuffled_indices.end());
+
+        vector<double> result(split_number);
+
+        for (size_t split = 0; split < split_number; ++split) {
+            FCANetwork network(structure);
+            auto test_begin = shuffled_indices.begin() + objects * split / split_number;
+            auto test_end = shuffled_indices.begin() + objects * (split+1) / split_number;
+
+            const size_t EPOCH_ACCURACY_DECREASES_TO_EXIT = 5;
+            size_t epoch_accuracy_decreases = 0;
+            size_t last_correct_answers = 0;
+            for (size_t epoch = 1; epoch <= iter_limit; ++epoch) {
+                for (auto it = shuffled_indices.begin(); it != test_begin; ++it)
+                    network.FitTransform(context.Intent(*it), targets[*it]);
+                for (auto it = test_end; it != shuffled_indices.end(); ++it)
+                    network.FitTransform(context.Intent(*it), targets[*it]);
+
+                size_t corrects = 0;
+                for (auto it = test_begin; it != test_end; ++it) {
+                    auto vec = network.Transform(context.Intent(*it));
+                size_t y_pred = max_element(vec.begin(), vec.end()) - vec.begin();
+                if (targets[*it] == y_pred)
+                    ++corrects;
+                }
+
+                cerr << "Accuracy after " << epoch << " iterations: "
+                     << 100.0 * static_cast<double>(corrects) / (test_end - test_begin) << '%' << endl;
+
+                if (corrects > last_correct_answers) {
+                    epoch_accuracy_decreases = 0;
+                } else if (epoch_accuracy_decreases++ >= EPOCH_ACCURACY_DECREASES_TO_EXIT) {
+                    result[split] = static_cast<double>(corrects) / (test_end - test_begin);
+                    break;  // go to the next split
+                }
+                last_correct_answers = corrects;
+            }
+        }
+
+        return result;
     }
 }
