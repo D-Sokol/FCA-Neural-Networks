@@ -2,6 +2,7 @@
 #include <iostream>  // Used for debug messages only
 #include <numeric>
 #include "fcanetwork.h"
+#include "measures.h"
 
 using namespace std;
 
@@ -15,7 +16,7 @@ namespace NN {
         size_t begin = lattice.GetLevelStarts().at(min_level);
         size_t end = lattice.GetLevelStarts().at(max_level);
         size_t first_layer_size = lattice.GetLevelStarts().at(min_level+1) - begin;
-        size_t last_layer_size = end - lattice.GetLevelStarts().at(max_level-1);
+        size_t last_layer_unfiltered_size = lattice.GetLevelStarts().at(max_level+1) - end;
 
         const auto& connections = lattice.GetConnections();
         vector<vector<size_t>> connections_shifted(connections.begin() + begin, connections.begin() + end);
@@ -34,6 +35,25 @@ namespace NN {
             }
         }
         connections_shifted.insert(connections_shifted.begin(), input_size, {});
+
+        const auto last_layer_size = last_layer_unfiltered_size / 2;
+        {
+            vector<size_t> last_layer_indexes(last_layer_unfiltered_size);
+            iota(last_layer_indexes.begin(), last_layer_indexes.end(), end);
+            auto middle_it = last_layer_indexes.begin() + last_layer_size;
+            partial_sort(last_layer_indexes.begin(), middle_it,
+                         last_layer_indexes.end(),
+                         [&concepts=lattice.GetConcepts(),&targets=target_classes](size_t i, size_t j){
+                            return Purity(concepts[i], targets) > Purity(concepts[j], targets);
+                         });
+            for (auto it = last_layer_indexes.begin(); it != middle_it; ++it) {
+                connections_shifted.push_back(connections[*it]);
+                for (auto& index : connections_shifted.back()) {
+                    index += input_size;
+                    index -= begin;
+                }
+            }
+        }
 
         vector<size_t> all_connections_with_last(last_layer_size);
         iota(all_connections_with_last.begin(), all_connections_with_last.end(), end - begin - last_layer_size + input_size);
