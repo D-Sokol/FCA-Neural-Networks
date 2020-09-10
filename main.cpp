@@ -116,7 +116,7 @@ int usage(const char* executable) {
 int print_accuracy(const FCA::Lattice& lattice, const FCA::Context& context,
                    const vector<size_t>& targets, size_t max_level) {
     try {
-        auto structure = NN::FCANetwork::GetStructure(lattice, targets, 1, max_level);
+        auto structure = NN::FCANetwork::GetStructure(lattice, targets, 2, max_level);
         auto accuracies = CrossValidationAccuracies(structure, context, targets);
         cout << structure.size() << ' ' << 100.0 * Average(accuracies.begin(), accuracies.end()) << endl;
         return 0;
