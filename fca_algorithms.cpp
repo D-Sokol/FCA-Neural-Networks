@@ -5,7 +5,17 @@
 using namespace std;
 
 namespace FCA {
-    vector<Concept> ThetaSophia(const Context& context, Predicate keep_concept) {
+    vector<Concept> ThetaSophia(const Context& context, Predicate keep_concept, optional<vector<bool>> mask_objects) {
+        if (mask_objects.has_value()) {
+            BitSetVector masked_context;
+            for (size_t obj = 0; obj < context.ObjSize(); ++obj) {
+                if ((*mask_objects)[obj]) {
+                    masked_context.emplace_back(context.Intent(obj));
+                }
+            }
+            return ThetaSophia(Context(masked_context), keep_concept);
+        }
+
         // Concept candidate with label that shows if the first one is proper concept.
         using MarkedConcept = pair<Concept, bool>;
         // Projection phi_{-1} produces only one trivial concept,

@@ -40,7 +40,7 @@ typename iterator_traits<RandomIt>::value_type Average(RandomIt begin, RandomIt 
 
 int usage(const char* executable);
 
-int print_accuracy(const FCA::Lattice& lattice, const FCA::Context& context,
+int print_accuracy(const FCA::Context& context, FCA::Predicate predicate,
                    const vector<size_t>& targets, size_t max_level);
 int print_accuracy(const vector<size_t>& layer_sizes, const FCA::Context& context,
                    const vector<size_t>& targets);
@@ -75,9 +75,7 @@ int main(int argc, char** argv) {
         size_t max_level = stoi(argv[4]);
 
         FCA::Predicate pred = [=](const FCA::Concept& c, size_t){ return Support(c) >= min_supp; };
-        auto concepts = ThetaSophia(context, pred);
-        FCA::Lattice lattice(move(concepts));
-        return print_accuracy(lattice, context, targets, max_level);
+        return print_accuracy(context, pred, targets, max_level);
     } else if ("cv"s == argv[2]) {
         if (argc != 5) {
             cerr << "Expected arguments: 'cv' min_cv max_level" << endl;
@@ -87,9 +85,7 @@ int main(int argc, char** argv) {
         size_t max_level = stoi(argv[4]);
 
         FCA::Predicate pred = [=,&context=context](const FCA::Concept& c, size_t ac){ return CVMeasure(c, context, ac) >= min_cv; };
-        auto concepts = ThetaSophia(context, pred);
-        FCA::Lattice lattice(move(concepts));
-        return print_accuracy(lattice, context, targets, max_level);
+        return print_accuracy(context, pred, targets, max_level);
     } else if ("cfc"s == argv[2]) {
         if (argc != 5) {
             cerr << "Expected arguments: 'cfc' min_cfc max_level" << endl;
@@ -99,9 +95,7 @@ int main(int argc, char** argv) {
         size_t max_level = stoi(argv[4]);
 
         FCA::Predicate pred = [=,&context=context](const FCA::Concept& c, size_t ac){ return CVMeasure(c, context, ac) >= min_cfc; };
-        auto concepts = ThetaSophia(context, pred);
-        FCA::Lattice lattice(move(concepts));
-        return print_accuracy(lattice, context, targets, max_level);
+        return print_accuracy(context, pred, targets, max_level);
     } else {
         return usage(argv[0]);
     }
@@ -113,12 +107,12 @@ int usage(const char* executable) {
     return 2;
 }
 
-int print_accuracy(const FCA::Lattice& lattice, const FCA::Context& context,
+int print_accuracy(const FCA::Context& context, FCA::Predicate predicate,
                    const vector<size_t>& targets, size_t max_level) {
     try {
-        auto structure = NN::FCANetwork::GetStructure(lattice, targets, 2, max_level);
-        auto accuracies = CrossValidationAccuracies(structure, context, targets);
-        cout << structure.size() << ' ' << 100.0 * Average(accuracies.begin(), accuracies.end()) << endl;
+        const size_t neurons = NN::FCANetwork::GetStructure(FCA::Lattice(ThetaSophia(context, predicate)), targets, 2, max_level).size();
+        auto accuracies = CrossValidationAccuracies(context, targets, predicate, max_level);
+        cout << neurons << ' ' << 100.0 * Average(accuracies.begin(), accuracies.end()) << endl;
         return 0;
     } catch (const out_of_range& e) {
         cerr << e.what() << endl;

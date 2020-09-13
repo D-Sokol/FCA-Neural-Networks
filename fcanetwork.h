@@ -3,6 +3,7 @@
 
 #include "lattice.h"
 #include "network.h"
+#include "fca_algorithms.h"
 
 namespace NN {
     class FCANetwork : protected Network {
@@ -24,6 +25,9 @@ namespace NN {
 
     double Accuracy(FCANetwork&, const FCA::Context&, const std::vector<size_t>& targets);
     size_t CycleTrainNetwork(FCANetwork&, const FCA::Context&, const std::vector<size_t>&, size_t iter_limit=100);
+    std::vector<double> CrossValidationAccuracies(const FCA::Context&, const std::vector<size_t>&,
+                                                  FCA::Predicate=FCA::keep_all, size_t max_level=3,
+                                                  size_t iter_limit=100, size_t split_number=5);
     std::vector<double> CrossValidationAccuracies(const NetworkStructure&, const FCA::Context&, const std::vector<size_t>&, size_t iter_limit=100, size_t split_number=5);
 }
 
