@@ -152,7 +152,8 @@ namespace NN {
         return iter_limit;
     }
 
-    vector<double> CrossValidationAccuracies(const NetworkStructure& structure, const FCA::Context& context, const vector<size_t>& targets, size_t iter_limit, size_t split_number) {
+    vector<double> CrossValidationAccuraciesImpl(const FCA::Context& context, function<FCANetwork(size_t, size_t)> generator,
+                                                 const vector<size_t>& targets, size_t iter_limit, size_t split_number) {
         const auto objects = context.ObjSize();
         vector<size_t> shuffled_indices(objects);
         iota(shuffled_indices.begin(), shuffled_indices.end(), 0);
@@ -161,7 +162,8 @@ namespace NN {
         vector<double> result(split_number);
 
         for (size_t split = 0; split < split_number; ++split) {
-            FCANetwork network(structure);
+            FCANetwork network = generator(split, split_number);
+
             auto test_begin = shuffled_indices.begin() + objects * split / split_number;
             auto test_end = shuffled_indices.begin() + objects * (split+1) / split_number;
 
@@ -177,9 +179,9 @@ namespace NN {
                 size_t corrects = 0;
                 for (auto it = test_begin; it != test_end; ++it) {
                     auto vec = network.Transform(context.Intent(*it));
-                size_t y_pred = max_element(vec.begin(), vec.end()) - vec.begin();
-                if (targets[*it] == y_pred)
-                    ++corrects;
+                    size_t y_pred = max_element(vec.begin(), vec.end()) - vec.begin();
+                    if (targets[*it] == y_pred)
+                        ++corrects;
                 }
 
                 cerr << "Accuracy after " << epoch << " iterations: "
@@ -196,5 +198,27 @@ namespace NN {
         }
 
         return result;
+    }
+
+    vector<double> CrossValidationAccuracies(const NetworkStructure& structure, const FCA::Context& context,
+                                             const std::vector<size_t>& targets, size_t iter_limit, size_t split_number) {
+        auto generator = [&](size_t, size_t){ return FCANetwork(structure);};
+        return CrossValidationAccuraciesImpl(context, generator, targets, iter_limit, split_number);
+    }
+
+    vector<double> CrossValidationAccuracies(const FCA::Context& context, const vector<size_t>& targets,
+                                             FCA::Predicate predicate, size_t max_level,
+                                             size_t iter_limit, size_t split_number) {
+        auto generator = [&](size_t split, size_t split_number){
+            const auto objects = context.ObjSize();
+            vector<bool> mask(objects);
+            {
+                const size_t end = objects * (split+1) / split_number;
+                for (size_t i = objects * split / split_number; i < end; ++i)
+                    mask[i] = true;
+            }
+            return FCANetwork(FCA::Lattice(ThetaSophia(context, predicate, move(mask))), targets, max_level);
+        };
+        return CrossValidationAccuraciesImpl(context, generator, targets, iter_limit, split_number);
     }
 }
