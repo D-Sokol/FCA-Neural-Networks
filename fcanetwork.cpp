@@ -10,6 +10,8 @@ namespace NN {
 
     NetworkStructure FCANetwork::GetStructure(const Lattice& lattice, const vector<size_t>& target_classes,
                                               size_t min_level, size_t max_level) {
+        max_level = min(max_level, lattice.GetLevelStarts().size()-1);
+
         size_t input_size = lattice.GetConcepts().front().Intent().size();
         size_t output_size = *max_element(target_classes.begin(), target_classes.end()) + 1;
         size_t begin = lattice.GetLevelStarts().at(min_level);
