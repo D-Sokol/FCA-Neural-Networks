@@ -1,1 +1,8 @@
+# Ignore raw results in csv format.
 *.txt
+
+# Ignore everything inside folders with backups.
+*/**
+
+# File with concatenated PDFs.
+accuracies.pdf

@@ -10,6 +10,8 @@ namespace NN {
 
     NetworkStructure FCANetwork::GetStructure(const Lattice& lattice, const vector<size_t>& target_classes,
                                               size_t min_level, size_t max_level) {
+        max_level = min(max_level, lattice.GetLevelStarts().size()-1);
+
         size_t input_size = lattice.GetConcepts().front().Intent().size();
         size_t output_size = *max_element(target_classes.begin(), target_classes.end()) + 1;
         size_t begin = lattice.GetLevelStarts().at(min_level);
@@ -72,64 +74,6 @@ namespace NN {
         Data tmp_output(Network::OutputSize());
         tmp_output[target_class] = 1;
         return Network::FitTransform(tmp, tmp_output);
-    }
-
-    double Accuracy(NN::FCANetwork& network, const FCA::Context& context, const vector<size_t>& targets) {
-        size_t corrects = 0;
-        const size_t objects = context.ObjSize();
-        for (size_t id = 0; id < objects; ++id) {
-            auto vec = network.Transform(context.Intent(id));
-            size_t y_pred = max_element(vec.begin(), vec.end()) - vec.begin();
-            if (targets[id] == y_pred)
-                ++corrects;
-        }
-        return static_cast<double>(corrects) / objects;
-    }
-
-    size_t CycleTrainNetwork(NN::FCANetwork& network, const FCA::Context& context,
-                             const vector<size_t>& targets, size_t iter_limit) {
-        const size_t objects = context.ObjSize();
-
-        vector<size_t> train_indexes, test_indexes;
-        train_indexes.reserve((4 * objects + 4) / 5);
-        test_indexes.reserve((1 * objects + 4) / 5);
-        for (size_t id = 0; id < objects; ++id) {
-            if (id % 5 != 4)
-               train_indexes.push_back(id);
-            else
-                test_indexes.push_back(id);
-        }
-        random_shuffle(train_indexes.begin(), train_indexes.end());
-        random_shuffle(test_indexes.begin(), test_indexes.end());
-
-        const size_t EPOCH_ACCURACY_DECREASES_TO_EXIT = 5;
-        size_t epoch_accuracy_decreases = 0;
-        size_t last_correct_answers = 0;
-
-        for (size_t epoch = 1; epoch < iter_limit; ++epoch) {
-            for (auto id : train_indexes)
-                network.FitTransform(context.Intent(id), targets[id]);
-
-            size_t corrects = 0;
-
-            for (auto id : test_indexes) {
-                auto vec = network.FitTransform(context.Intent(id), targets[id]);
-                size_t y_pred = max_element(vec.begin(), vec.end()) - vec.begin();
-                if (targets[id] == y_pred)
-                    ++corrects;
-            }
-
-            cerr << "Accuracy after " << epoch << " iterations: "
-                 << 100.0 * static_cast<double>(corrects) / test_indexes.size() << '%' << endl;
-
-            if (corrects > last_correct_answers) {
-                epoch_accuracy_decreases = 0;
-            } else if (epoch_accuracy_decreases++ >= EPOCH_ACCURACY_DECREASES_TO_EXIT) {
-                return epoch;
-            }
-            last_correct_answers = corrects;
-        }
-        return iter_limit;
     }
 
     vector<double> CrossValidationAccuraciesImpl(const FCA::Context& context, function<FCANetwork(size_t, size_t)> generator,
