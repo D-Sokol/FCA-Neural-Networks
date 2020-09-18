@@ -18,7 +18,11 @@ namespace NN {
         size_t begin = lattice.GetLevelStarts().at(min_level);
         size_t end = lattice.GetLevelStarts().at(max_level);
         size_t first_layer_size = lattice.GetLevelStarts().at(min_level+1) - begin;
-        size_t last_layer_unfiltered_size = lattice.GetLevelStarts().at(max_level+1) - end;
+        size_t last_layer_unfiltered_size = (
+                max_level == lattice.GetLevelStarts().size()-1
+                ? lattice.GetConcepts().size()
+                : lattice.GetLevelStarts().at(max_level+1)
+            ) - end;
 
         const auto& connections = lattice.GetConnections();
         vector<vector<size_t>> connections_shifted(connections.begin() + begin, connections.begin() + end);
