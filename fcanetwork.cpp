@@ -136,12 +136,16 @@ namespace NN {
         auto generator = [&](size_t split, size_t split_number){
             const auto objects = context.ObjSize();
             vector<bool> mask(objects, true);
+            vector<size_t> marked_targets;
             {
+                const size_t begin = objects * split / split_number;
                 const size_t end = objects * (split+1) / split_number;
-                for (size_t i = objects * split / split_number; i < end; ++i)
+                for (size_t i = begin; i < end; ++i)
                     mask[i] = false;
+                marked_targets.insert(marked_targets.end(), targets.begin(), targets.begin() + begin);
+                marked_targets.insert(marked_targets.end(), targets.begin() + end, targets.end());
             }
-            return FCANetwork(FCA::Lattice(ThetaSophia(context, predicate, move(mask))), targets, max_level);
+            return FCANetwork(FCA::Lattice(ThetaSophia(context, predicate, move(mask))), marked_targets, max_level);
         };
         return CrossValidationAccuraciesImpl(context, generator, targets, iter_limit, split_number);
     }
