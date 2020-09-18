@@ -135,11 +135,11 @@ namespace NN {
                                              size_t iter_limit, size_t split_number) {
         auto generator = [&](size_t split, size_t split_number){
             const auto objects = context.ObjSize();
-            vector<bool> mask(objects);
+            vector<bool> mask(objects, true);
             {
                 const size_t end = objects * (split+1) / split_number;
                 for (size_t i = objects * split / split_number; i < end; ++i)
-                    mask[i] = true;
+                    mask[i] = false;
             }
             return FCANetwork(FCA::Lattice(ThetaSophia(context, predicate, move(mask))), targets, max_level);
         };
