@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-datasets = 'breast_cancer', 'mammographic_masses', 'seismic_bumps', 'zoo'
+datasets = 'breast_cancer', 'mammographic_masses', 'seismic_bumps', 'zoo', 'car_evaluation', 'titanic'
 filename_template = "{method}-{dataset}.txt"
 
 if __name__ == '__main__':
