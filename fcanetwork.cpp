@@ -42,7 +42,7 @@ namespace NN {
         }
         connections_shifted.insert(connections_shifted.begin(), input_size, {});
 
-        const auto last_layer_size = last_layer_unfiltered_size / 2;
+        const auto last_layer_size = (last_layer_unfiltered_size + 1) / 2;
         {
             vector<size_t> last_layer_indexes(last_layer_unfiltered_size);
             iota(last_layer_indexes.begin(), last_layer_indexes.end(), end);
