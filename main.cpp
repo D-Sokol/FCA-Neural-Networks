@@ -110,7 +110,7 @@ int usage(const char* executable) {
 int print_accuracy(const FCA::Context& context, FCA::Predicate predicate,
                    const vector<size_t>& targets, size_t max_level) {
     try {
-        const size_t neurons = NN::FCANetwork::GetStructure(FCA::Lattice(ThetaSophia(context, predicate)), targets, 1, max_level).size();
+        const size_t neurons = NN::FCANetwork::GetStructure(FCA::Lattice(ThetaSophia(context, predicate)), targets, 2, max_level).size();
         auto accuracies = CrossValidationAccuracies(context, targets, predicate, max_level);
         cout << neurons << ' ' << 100.0 * Average(accuracies.begin(), accuracies.end()) << endl;
         return 0;

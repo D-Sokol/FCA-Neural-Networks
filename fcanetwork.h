@@ -9,7 +9,7 @@ namespace NN {
     class FCANetwork : protected Network {
     public:
         FCANetwork(const FCA::Lattice& lattice, const std::vector<size_t>& target_classes,
-                   size_t max_level, size_t min_level=1);
+                   size_t max_level, size_t min_level=2);
         explicit FCANetwork(const std::vector<size_t>&);
         explicit FCANetwork(const NetworkStructure&);
 
