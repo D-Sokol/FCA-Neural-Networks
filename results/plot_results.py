@@ -48,5 +48,5 @@ if __name__ == '__main__':
         # ax.set_xticks(np.arange(0.0, 1.1, 0.1))
 
         plt.gcf().legend()
-        plt.savefig(f'{dataset}-accuracy.pdf')
+        plt.savefig(f'{dataset}-accuracy.svg')
         plt.clf()
